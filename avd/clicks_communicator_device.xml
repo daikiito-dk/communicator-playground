@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Clicks Communicator のハードウェアプロファイル（コミュニティ版・非公式）。
+  Android Studio の Device Manager > Import Hardware Profiles で読み込めます。
+  画面密度（pixel-density）は推定値です。実機の `adb shell wm density` で確認して更新してください。
+-->
+<d:devices xmlns:d="http://schemas.android.com/sdk/devices/5"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <d:device>
+    <d:name>Clicks Communicator (Community)</d:name>
+    <d:id>clicks_communicator_community</d:id>
+    <d:manufacturer>Community</d:manufacturer>
+    <d:hardware>
+      <d:screen>
+        <d:screen-size>normal</d:screen-size>
+        <d:diagonal-length>4.03</d:diagonal-length>
+        <d:pixel-density>420dpi</d:pixel-density>
+        <d:screen-ratio>notlong</d:screen-ratio>
+        <d:dimensions>
+          <d:x-dimension>1080</d:x-dimension>
+          <d:y-dimension>1200</d:y-dimension>
+        </d:dimensions>
+        <d:xdpi>400.6</d:xdpi>
+        <d:ydpi>400.6</d:ydpi>
+        <d:touch>
+          <d:multitouch>jazz-hands</d:multitouch>
+          <d:mechanism>finger</d:mechanism>
+          <d:screen-type>capacitive</d:screen-type>
+        </d:touch>
+      </d:screen>
+      <d:networking>
+        Bluetooth
+        Wifi
+        NFC
+      </d:networking>
+      <d:sensors>
+        Accelerometer
+        Compass
+        GPS
+        Gyroscope
+        LightSensor
+        ProximitySensor
+      </d:sensors>
+      <d:mic>true</d:mic>
+      <d:camera>
+        <d:location>front</d:location>
+        <d:autofocus>false</d:autofocus>
+        <d:flash>false</d:flash>
+      </d:camera>
+      <d:camera>
+        <d:location>back</d:location>
+        <d:autofocus>true</d:autofocus>
+        <d:flash>true</d:flash>
+      </d:camera>
+      <d:keyboard>qwerty</d:keyboard>
+      <d:nav>nonav</d:nav>
+      <d:ram unit="GiB">12</d:ram>
+      <d:buttons>soft</d:buttons>
+      <d:internal-storage unit="GiB">256</d:internal-storage>
+      <d:removable-storage unit="GiB">0</d:removable-storage>
+      <d:cpu>Generic CPU</d:cpu>
+      <d:gpu>Generic GPU</d:gpu>
+      <d:abi>
+        arm64-v8a
+        x86_64
+      </d:abi>
+      <d:dock/>
+      <d:power-type>battery</d:power-type>
+    </d:hardware>
+    <d:software>
+      <d:api-level>-</d:api-level>
+      <d:live-wallpaper-support>true</d:live-wallpaper-support>
+      <d:bluetooth-profiles/>
+      <d:gl-version>2.0</d:gl-version>
+      <d:gl-extensions/>
+      <d:status-bar>true</d:status-bar>
+    </d:software>
+    <!-- 物理キーボードが常に露出しているため、縦向き・キーボード露出の状態のみ定義しています。 -->
+    <d:state default="true" name="Portrait">
+      <d:description>Portrait with the built-in keyboard exposed</d:description>
+      <d:screen-orientation>port</d:screen-orientation>
+      <d:keyboard-state>keysexposed</d:keyboard-state>
+      <d:nav-state>navhidden</d:nav-state>
+    </d:state>
+  </d:device>
+</d:devices>

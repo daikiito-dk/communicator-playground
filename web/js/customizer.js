@@ -3,6 +3,7 @@
   "use strict";
 
   const C = window.CommunicatorCatalog;
+  const { t } = window.I18n;
   const $ = (id) => document.getElementById(id);
 
   const state = { body: "smoke", cover: "dune", layout: "qwerty", case: false, ring: false };
@@ -72,7 +73,7 @@
         <div class="sb"><span>9:41</span><span>5G ▮▮▮ 82%</span></div>
         <div class="lock-body">
           <div class="clock">9:41</div>
-          <div class="date">${new Date().toLocaleDateString("ja-JP", { month: "long", day: "numeric", weekday: "long" })}</div>
+          <div class="date">${new Date().toLocaleDateString(window.I18n.locale(), { month: "long", day: "numeric", weekday: "long" })}</div>
         </div>
       </div>`;
   }
@@ -105,17 +106,17 @@
     const body = C.bodies.find((b) => b.id === state.body);
     const cover = C.covers.find((c) => c.id === state.cover);
     $("body-picked").textContent = body.name;
-    $("cover-picked").textContent = cover.name + (body.defaultCover === cover.id ? "（標準で付属）" : "");
+    $("cover-picked").textContent = cover.name + (body.defaultCover === cover.id ? t("cover.default") : "");
     $("kb-layout").value = state.layout;
     for (const a of C.accessories) $("acc-" + a.id).checked = state[a.id];
 
     const items = [
-      `本体: ${body.name}`,
-      `背面カバー: ${cover.name}`,
-      `キーボード: ${C.layouts[state.layout].name}`,
-      ...C.accessories.filter((a) => state[a.id]).map((a) => `アクセサリー: ${a.name}`),
+      t("summary.body", { v: body.name }),
+      t("summary.cover", { v: cover.name }),
+      t("summary.layout", { v: C.layouts[state.layout].name }),
+      ...C.accessories.filter((a) => state[a.id]).map((a) => t("summary.acc", { v: t(a.nameKey) })),
     ];
-    $("config-summary").replaceChildren(...items.map((t) => Object.assign(document.createElement("li"), { textContent: t })));
+    $("config-summary").replaceChildren(...items.map((text) => Object.assign(document.createElement("li"), { textContent: text })));
 
     writeHash();
     for (const fn of listeners) fn({ ...state });
@@ -166,7 +167,7 @@
     for (const a of C.accessories) {
       const label = document.createElement("label");
       label.className = "check";
-      label.innerHTML = `<input type="checkbox" id="acc-${a.id}"> ${a.name}`;
+      label.innerHTML = `<input type="checkbox" id="acc-${a.id}"> <span data-i18n="${a.nameKey}">${t(a.nameKey)}</span>`;
       acc.appendChild(label);
       label.querySelector("input").addEventListener("change", (e) => {
         update({ [a.id]: e.target.checked }, a.id === "ring" && e.target.checked ? "back" : null);
@@ -186,7 +187,7 @@
     $("share-link").addEventListener("click", async () => {
       try {
         await navigator.clipboard.writeText(location.href);
-        $("share-status").textContent = "リンクをコピーしました。";
+        $("share-status").textContent = t("share.copied");
       } catch {
         $("share-status").textContent = location.href;
       }
@@ -199,6 +200,10 @@
 
   window.Customizer = {
     init,
+    refresh: () => {
+      $("share-status").textContent = "";
+      render();
+    },
     fit: () => device.fit(stage),
     getState: () => ({ ...state }),
     onChange: (fn) => listeners.push(fn),

@@ -5,6 +5,7 @@
   "use strict";
 
   const C = window.CommunicatorCatalog;
+  const I18n = window.I18n;
 
   // 表示領域（本体左上からの mm）。幅と高さは 4.03 インチ 1080x1200 からの算出値、位置は正面図の実測値。
   const SCREEN = { x: 5.1, y: 5.5, w: 68.46, h: 76.07 };
@@ -39,22 +40,22 @@
   ];
   const LIGHT = normalize([-0.35, -0.55, -0.75]);
 
-  // 側面の部品（mm）。pos は上面なら本体左端から、左右の側面なら本体上端からの距離。
+  // 側面の部品（mm）。title は i18n.js の翻訳キーです。pos は上面なら本体左端から、左右の側面なら本体上端からの距離。
   const SIDE_PARTS = {
     top: [
-      { cls: "s-key", from: 52.9, to: 65.5, title: "電源キー" },
-      { cls: "s-jack", from: 17.7, to: 21.3, title: "3.5 mm イヤホンジャック" },
+      { cls: "s-key", from: 52.9, to: 65.5, title: "dev.power" },
+      { cls: "s-jack", from: 17.7, to: 21.3, title: "dev.jack" },
     ],
     left: [
-      { cls: "s-switch", from: 14.6, to: 20.4, title: "キルスイッチ" },
-      { cls: "s-key", from: 26.3, to: 39.3, title: "サイドキー（上）" },
-      { cls: "s-key", from: 42.7, to: 55.7, title: "サイドキー（下）" },
+      { cls: "s-switch", from: 14.6, to: 20.4, title: "dev.kill" },
+      { cls: "s-key", from: 26.3, to: 39.3, title: "dev.voiceKey" },
+      { cls: "s-key", from: 42.7, to: 55.7, title: "dev.lowerKey" },
     ],
     right: [
-      { cls: "s-led", from: 34.8, to: 52.4, title: "Signal LED" },
-      { cls: "s-key", from: 36.2, to: 51.4, title: "右側面のキー" },
+      { cls: "s-led", from: 34.8, to: 52.4, title: "dev.led" },
+      { cls: "s-key", from: 36.2, to: 51.4, title: "dev.rightKey" },
     ],
-    bottom: [{ cls: "s-usb", from: 34.8, to: 43.8, title: "USB-C" }],
+    bottom: [{ cls: "s-usb", from: 34.8, to: 43.8, title: "dev.usb" }],
   };
 
   const mmCalc = (v) => `calc(${v} * var(--mm))`;
@@ -194,7 +195,7 @@
         // 帯の x 方向は、上面では左→右、右側面では上→下、下面では右→左、左側面では下→上を向きます。
         const a = name === "left" ? h - r - part.to : name === "bottom" ? w - r - part.to : part.from - r;
         const node = el("div", "side-part " + part.cls, strip);
-        node.title = part.title;
+        I18n.title(node, part.title);
         node.style.left = mmCalc(a);
         node.style.width = mmCalc(part.to - part.from);
       }
@@ -231,27 +232,27 @@
     el("div", "glass", front);
     const screen = el("div", "screen", front);
     const inner = el("div", "screen-inner", screen);
-    el("div", "punch", front).title = "前面カメラ";
+    I18n.title(el("div", "punch", front), "dev.punch");
     const keyboard = el("div", "keyboard", front);
     el("div", "speaker left", front);
     el("div", "speaker right", front);
 
     const powerKey = el("div", "side-key top", front);
-    powerKey.title = "電源キー（上面）";
-    el("div", "jack", front).title = "3.5 mm イヤホンジャック（上面）";
+    I18n.title(powerKey, "dev.power");
+    I18n.title(el("div", "jack", front), "dev.jack");
     const voiceKey = el("div", "side-key left upper", front);
-    voiceKey.title = "サイドキー（長押しで音声入力。割り当ては推定）";
+    I18n.title(voiceKey, "dev.voiceKey");
     const lowerKey = el("div", "side-key left lower", front);
-    lowerKey.title = "サイドキー（役割は推定）";
+    I18n.title(lowerKey, "dev.lowerKey");
     // LED はキーの下に重ね、キーの周りにはみ出した部分がリングとして光ります。
     const led = el("div", "led", front);
-    led.title = "Signal LED（右側面キーの周りが光ります）";
+    I18n.title(led, "dev.led");
     const rightKey = el("div", "side-key right", front);
-    rightKey.title = "右側面のキー（Signal LED 付き。役割は未確認）";
+    I18n.title(rightKey, "dev.rightKey");
     const killSwitch = el("button", "side-switch", front);
     killSwitch.type = "button";
     killSwitch.tabIndex = -1;
-    killSwitch.title = "キルスイッチ（クリックで切り替え）";
+    I18n.title(killSwitch, "dev.kill");
 
     const back = el("div", "face back", root);
     el("div", "plateau", back);
@@ -313,7 +314,7 @@
             keyEl.type = "button";
             keyEl.tabIndex = -1;
             keyEl.dataset.value = key.value;
-            if (key.title) keyEl.title = key.title;
+            if (key.titleKey) I18n.title(keyEl, key.titleKey);
             if (key.sub) {
               el("span", "sub", keyEl).textContent = key.sub;
               subs.set(key.value, key.sub);

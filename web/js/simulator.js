@@ -6,14 +6,8 @@
   const C = window.CommunicatorCatalog;
   const $ = (id) => document.getElementById(id);
 
-  const SAMPLE_TEXTS = [
-    "いまどこ？",
-    "了解です、あとで電話します",
-    "明日の会議、10時からに変更です",
-    "写真送ったよ",
-    "帰りに牛乳買ってきて",
-  ];
-  const VOICE_TEXT = "（音声入力）10分後に着きます";
+  const I18n = window.I18n;
+  const { t } = I18n;
   const STATUS_BAR_DP = 44;
 
   let state;
@@ -47,13 +41,23 @@
         ...c,
         unread: 0,
         lastAt: i,
-        messages: [{ from: "them", text: c.greeting }],
+        messages: [{ from: "them", key: `contact.${c.id}.msg` }],
       })),
     };
   }
 
   function escapeHtml(s) {
     return s.replace(/[&<>"']/g, (ch) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[ch]);
+  }
+
+  const contactName = (c) => t("contact." + c.id);
+
+  // 相手から届いたモックのメッセージは翻訳キーで持ち、言語を切り替えると表示も切り替わるようにします。
+  // 自分で入力した文は text のまま持ちます。
+  function msgText(m) {
+    if (!m.key) return m.text;
+    const v = t(m.key);
+    return Array.isArray(v) ? v[m.index] : v;
   }
 
   function logicalSize() {
@@ -76,7 +80,7 @@
   }
 
   function now() {
-    return new Date().toLocaleTimeString("ja-JP", { hour: "2-digit", minute: "2-digit" });
+    return new Date().toLocaleTimeString(I18n.locale(), { hour: "2-digit", minute: "2-digit" });
   }
 
   function sortedConversations() {
@@ -90,17 +94,17 @@
   // --- 描画 ---------------------------------------------------------------
 
   function statusBar() {
-    const mods = (state.shift ? "⇧ " : "") + (state.alt ? "alt " : "") + (state.killed ? "マイク OFF " : "");
+    const mods = (state.shift ? "⇧ " : "") + (state.alt ? "alt " : "") + (state.killed ? t("os.micBadge") + " " : "");
     return `<div class="sb"><span class="sb-time">${now()}</span><span>${mods}5G ▮▮▮ 82%</span></div>`;
   }
 
   function lockScreen() {
-    const date = new Date().toLocaleDateString("ja-JP", { month: "long", day: "numeric", weekday: "long" });
+    const date = new Date().toLocaleDateString(I18n.locale(), { month: "long", day: "numeric", weekday: "long" });
     return `
       <div class="lock-body" data-action="unlock">
         <div class="clock">${now()}</div>
         <div class="date">${date}</div>
-        <div class="unlock-hint">スペースキー（指紋センサー）で解除</div>
+        <div class="unlock-hint">${t("os.unlock")}</div>
       </div>`;
   }
 
@@ -109,79 +113,80 @@
       const last = c.messages[c.messages.length - 1];
       return `
         <div class="hub-item${i === state.selected ? " sel" : ""}" data-action="open" data-id="${c.id}" style="--c:${c.color}">
-          <div class="avatar">${escapeHtml(c.name.slice(0, 1))}</div>
+          <div class="avatar">${escapeHtml([...contactName(c)][0])}</div>
           <div class="hub-text">
-            <div class="hub-name">${escapeHtml(c.name)} <span class="hub-app">${c.app}</span></div>
-            <div class="hub-last">${last.from === "me" ? "あなた: " : ""}${escapeHtml(last.text)}</div>
+            <div class="hub-name">${escapeHtml(contactName(c))} <span class="hub-app">${c.app}</span></div>
+            <div class="hub-last">${last.from === "me" ? t("os.you") : ""}${escapeHtml(msgText(last))}</div>
           </div>
           ${c.unread ? `<div class="badge">${c.unread}</div>` : ""}
         </div>`;
     });
     return `
-      <div class="appbar">Message hub <span class="appbar-sub">モック</span></div>
+      <div class="appbar">Message hub <span class="appbar-sub">${t("os.mock")}</span></div>
       <div class="scroll" data-screen="hub">${items.join("")}</div>
-      <div class="hint">J / K 移動・Enter 開く・N メモ</div>`;
+      <div class="hint">${t("os.hubHint")}</div>`;
   }
 
   function chatScreen() {
     const c = currentConv();
     const msgs = c.messages
-      .map((m) => `<div class="msg ${m.from === "me" ? "me" : ""}">${escapeHtml(m.text)}</div>`)
+      .map((m) => `<div class="msg ${m.from === "me" ? "me" : ""}">${escapeHtml(msgText(m))}</div>`)
       .join("");
     const input = state.input
       ? `${escapeHtml(state.input)}<span class="caret"></span>`
-      : `<span class="caret"></span><span class="placeholder">メッセージを入力</span>`;
+      : `<span class="caret"></span><span class="placeholder">${t("os.typeMessage")}</span>`;
     return `
       <div class="appbar" style="--c:${c.color}">
-        <button type="button" class="back-btn" data-action="back" aria-label="戻る">←</button>
-        <div class="avatar sm">${escapeHtml(c.name.slice(0, 1))}</div>${escapeHtml(c.name)}
+        <button type="button" class="back-btn" data-action="back" aria-label="${t("os.back")}">←</button>
+        <div class="avatar sm">${escapeHtml([...contactName(c)][0])}</div>${escapeHtml(contactName(c))}
         <span class="appbar-sub">${c.app}</span>
       </div>
       <div class="scroll msgs" data-screen="chat-${c.id}">${msgs}</div>
       <div class="composer">${input}</div>
-      <div class="hint">Enter 送信・Esc 戻る</div>`;
+      <div class="hint">${t("os.chatHint")}</div>`;
   }
 
   function notesScreen() {
     const body = state.notes
       ? `${escapeHtml(state.notes)}<span class="caret"></span>`
-      : `<span class="caret"></span><span class="placeholder">キーボードで入力できます</span>`;
+      : `<span class="caret"></span><span class="placeholder">${t("os.notesPlaceholder")}</span>`;
     return `
       <div class="appbar">
-        <button type="button" class="back-btn" data-action="back" aria-label="戻る">←</button>メモ
+        <button type="button" class="back-btn" data-action="back" aria-label="${t("os.back")}">←</button>${t("os.notes")}
       </div>
       <div class="scroll notes-body" data-screen="notes">${body}</div>
-      <div class="hint">Enter 改行・Esc 戻る</div>`;
+      <div class="hint">${t("os.notesHint")}</div>`;
   }
 
   function overlays() {
     const parts = [];
     if (state.toast) {
-      const t = state.toast;
+      const toast = state.toast;
+      const name = contactName(toast);
       parts.push(`
-        <div class="toast-n" data-action="open" data-id="${t.id}" style="--c:${t.color}">
-          <div class="avatar sm">${escapeHtml(t.name.slice(0, 1))}</div>
-          <div class="hub-text"><div class="hub-name">${escapeHtml(t.name)}</div><div class="hub-last">${escapeHtml(t.text)}</div></div>
+        <div class="toast-n" data-action="open" data-id="${toast.id}" style="--c:${toast.color}">
+          <div class="avatar sm">${escapeHtml([...name][0])}</div>
+          <div class="hub-text"><div class="hub-name">${escapeHtml(name)}</div><div class="hub-last">${escapeHtml(msgText(toast.message))}</div></div>
         </div>`);
     }
     if (state.recording && state.killed) {
       parts.push(`
         <div class="voice-overlay">
-          <div>マイクはオフです</div>
-          <div class="note-sm">キルスイッチ（左側面）を戻すと使えます</div>
+          <div>${t("os.micOff")}</div>
+          <div class="note-sm">${t("os.micOffHint")}</div>
         </div>`);
     } else if (state.recording) {
       parts.push(`
         <div class="voice-overlay">
           <div class="bars">${"<span></span>".repeat(5)}</div>
-          <div>聞き取り中…</div>
-          <div class="note-sm">サイドキーを離すと入力されます</div>
+          <div>${t("os.listening")}</div>
+          <div class="note-sm">${t("os.listeningHint")}</div>
         </div>`);
     }
     if (state.safe) {
       parts.push(`
         <div class="safe-overlay">
-          <div class="safe-top" style="height:${STATUS_BAR_DP}px">ステータスバー ${STATUS_BAR_DP}dp</div>
+          <div class="safe-top" style="height:${STATUS_BAR_DP}px">${t("os.statusBar")} ${STATUS_BAR_DP}dp</div>
           <div class="safe-frame" style="border-radius:${cutout().radius}px"></div>
           <div class="safe-cutout" style="left:${cutout().x - cutout().r}px;top:${cutout().y - cutout().r}px;width:${cutout().r * 2}px;height:${cutout().r * 2}px"></div>
         </div>`);
@@ -206,14 +211,14 @@
   function renderUrl(w, h) {
     if (!state.url) {
       iframe = null;
-      device.inner.innerHTML = `<div class="os"><div class="url-empty">右のパネルに URL を入れて「表示」を押してください</div></div>`;
+      device.inner.innerHTML = `<div class="os"><div class="url-empty">${t("os.urlEmpty")}</div></div>`;
       return;
     }
     if (!iframe || iframe.dataset.url !== state.url) {
       iframe = document.createElement("iframe");
       iframe.dataset.url = state.url;
       iframe.src = state.url;
-      iframe.title = "シミュレーター内のページ";
+      I18n.title(iframe, "os.iframeTitle");
       iframe.setAttribute("sandbox", "allow-scripts allow-same-origin allow-forms allow-popups");
       device.inner.replaceChildren(iframe);
     }
@@ -224,7 +229,7 @@
   function render() {
     const { w, h } = logicalSize();
     device.setLogicalSize(w, h);
-    $("sim-info").textContent = `${w} × ${h} dp（${state.density} dpi の場合）`;
+    $("sim-info").textContent = t("sim.info", { w, h, d: state.density });
     updateLed();
 
     if (state.mode === "url") {
@@ -271,8 +276,8 @@
     go("chat");
   }
 
-  function showToast(conv, text) {
-    state.toast = { id: conv.id, name: conv.name, color: conv.color, text };
+  function showToast(conv, message) {
+    state.toast = { id: conv.id, color: conv.color, message };
     clearTimeout(toastTimer);
     toastTimer = setTimeout(() => {
       state.toast = null;
@@ -280,10 +285,10 @@
     }, 3000);
   }
 
-  function notify(id, text) {
+  function notify(id, message) {
     const conv = state.conversations.find((c) => c.id === id);
-    const message = text || SAMPLE_TEXTS[Math.floor(Math.random() * SAMPLE_TEXTS.length)];
-    conv.messages.push({ from: "them", text: message });
+    if (!message) message = { from: "them", key: "os.samples", index: Math.floor(Math.random() * t("os.samples").length) };
+    conv.messages.push(message);
     conv.lastAt = Date.now();
     if (state.screen === "chat" && state.convId === id) {
       state.stickBottom = true;
@@ -305,7 +310,7 @@
     state.stickBottom = true;
     render();
     const id = conv.id;
-    setTimeout(() => notify(id, "了解！"), 1500);
+    setTimeout(() => notify(id, { from: "them", key: "os.reply" }), 1500);
   }
 
   function insertText(text) {
@@ -394,10 +399,10 @@
     state.recording = false;
     device.voiceKey.classList.remove("active");
     if (state.killed) return render();
-    if (state.screen === "chat") state.input += VOICE_TEXT;
+    if (state.screen === "chat") state.input += t("os.voiceText");
     else {
       if (state.screen !== "notes") state.screen = "notes";
-      state.notes += (state.notes && !state.notes.endsWith("\n") ? "\n" : "") + VOICE_TEXT;
+      state.notes += (state.notes && !state.notes.endsWith("\n") ? "\n" : "") + t("os.voiceText");
       state.stickBottom = true;
     }
     render();
@@ -465,13 +470,14 @@
       b.type = "button";
       b.className = "btn notify-btn";
       b.style.setProperty("--c", c.color);
-      b.textContent = `${c.name}（${c.app}）`;
+      b.dataset.id = c.id;
       b.addEventListener("click", () => {
         if (state.mode === "mock") notify(c.id);
       });
       notifyRow.appendChild(b);
     }
 
+    labelNotifyButtons();
     holdToTalk($("sim-voice"));
     $("sim-reset").addEventListener("click", () => {
       const { mode, url, density, fontScale, safe, clicksKey } = state;
@@ -479,6 +485,13 @@
       device.setKilled(false);
       render();
     });
+  }
+
+  function labelNotifyButtons() {
+    for (const b of $("sim-notify").children) {
+      const c = C.contacts.find((x) => x.id === b.dataset.id);
+      b.textContent = `${contactName(c)} (${c.app})`;
+    }
   }
 
   function setupInput() {
@@ -545,6 +558,10 @@
   window.Simulator = {
     init,
     applyLook,
+    refresh: () => {
+      labelNotifyButtons();
+      render();
+    },
     fit: () => device.fit(stage),
   };
 })();

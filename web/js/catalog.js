@@ -19,10 +19,10 @@
   const bottomRow = [
     { label: "123", value: "Sym", cls: "mod round small", cx: 9.74 },
     { label: "ctrl", sub: "0", value: "Ctrl", cls: "mod round small", cx: 17.15 },
-    { label: "", value: "Apps", cls: "mod round apps", cx: 24.56, title: "アプリ検索" },
-    { label: "", value: " ", cls: "space", cx: 39.4, w: 20.8, title: "スペース（指紋センサー）" },
-    { label: "", value: "ClicksKey", cls: "clicks round", cx: 54.1, title: "Clicks Key" },
-    { label: "☺", value: "Emoji", cls: "mod round", cx: 61.5, title: "絵文字" },
+    { label: "", value: "Apps", cls: "mod round apps", cx: 24.56, titleKey: "key.apps" },
+    { label: "", value: " ", cls: "space", cx: 39.4, w: 20.8, titleKey: "key.space" },
+    { label: "", value: "ClicksKey", cls: "clicks round", cx: 54.1, titleKey: "key.clicks" },
+    { label: "☺", value: "Emoji", cls: "mod round", cx: 61.5, titleKey: "key.emoji" },
     { label: "alt", value: "Alt", cls: "mod round small", cx: 68.9 },
   ];
 
@@ -45,20 +45,19 @@
       },
     ],
 
+    // 公式サイトのカバー一覧（カルーセルの並び順）。色は製品画像の平らな部分から計測し、上下に明暗をつけています。
+    // どのカバーも同じ穴あき（パンチング）仕上げです。
     covers: [
-      { id: "surf", name: "Surf", bg: "linear-gradient(150deg, #e9f6fb 0%, #7cc6e8 45%, #2f7fc1 100%)" },
-      { id: "miami-beach", name: "Miami Beach", bg: "linear-gradient(150deg, #ffb3c7 0%, #ffd6a5 50%, #6fd6c8 100%)" },
-      { id: "dune", name: "Dune", bg: "linear-gradient(160deg, #e6d4b3, #c9ae84)" },
-      { id: "spice", name: "Spice", bg: "linear-gradient(160deg, #ee7a3a, #c4531f)" },
-      { id: "clover", name: "Clover", bg: "linear-gradient(160deg, #4b6b45, #2f4a2c)" },
-      { id: "vino", name: "Vino", bg: "linear-gradient(160deg, #8a2a45, #561528)" },
-      { id: "onyx", name: "Onyx", bg: "linear-gradient(160deg, #2b2b2e, #111113)" },
-      { id: "surge", name: "Surge", bg: "linear-gradient(160deg, #e3ff5c, #a6d61c)" },
-      { id: "bloom", name: "Bloom", bg: "radial-gradient(circle at 30% 30%, #f7b6de, #b26fd6 60%, #6e4ab8)" },
-      {
-        id: "cognac", name: "Cognac",
-        bg: "repeating-linear-gradient(35deg, rgba(0,0,0,.06) 0 2px, transparent 2px 5px), linear-gradient(160deg, #a35e2e, #6e3a17)",
-      },
+      { id: "cognac", name: "Cognac", bg: "linear-gradient(160deg, #8c6845, #6a4b2f)" },
+      { id: "surf", name: "Surf", bg: "linear-gradient(160deg, #4f596a, #383f4b)" },
+      { id: "miami-beach", name: "Miami Beach", bg: "linear-gradient(160deg, #b07689, #8a5466)" },
+      { id: "dune", name: "Dune", bg: "linear-gradient(160deg, #bab5ae, #938e88)" },
+      { id: "spice", name: "Spice", bg: "linear-gradient(160deg, #9a6c34, #744f22)" },
+      { id: "clover", name: "Clover", bg: "linear-gradient(160deg, #37402f, #252b20)" },
+      { id: "vino", name: "Vino", bg: "linear-gradient(160deg, #3e2f2f, #291e1e)" },
+      { id: "onyx", name: "Onyx", bg: "linear-gradient(160deg, #42423f, #2a2a28)" },
+      { id: "surge", name: "Surge", bg: "linear-gradient(160deg, #b6b553, #919138)" },
+      { id: "bloom", name: "Bloom", bg: "linear-gradient(160deg, #8a7984, #675863)" },
     ],
 
     layouts: {
@@ -93,15 +92,16 @@
     },
 
     accessories: [
-      { id: "case", name: "ミニマルケース" },
-      { id: "ring", name: "Qi2 リングスタンド" },
+      { id: "case", nameKey: "acc.case" },
+      { id: "ring", nameKey: "acc.ring" },
     ],
 
+    // 名前と最初のメッセージは i18n.js の contact.<id> と contact.<id>.msg です。
     contacts: [
-      { id: "mom", name: "お母さん", app: "SMS", color: "#ff7eb6", greeting: "今日は晩ごはんいる？" },
-      { id: "boss", name: "上司", app: "Slack", color: "#ff5a4f", greeting: "資料の確認お願いします" },
-      { id: "telegram", name: "サークル", app: "Telegram", color: "#4fb3ff", greeting: "週末の集合場所決まった？" },
-      { id: "whatsapp", name: "Alex", app: "WhatsApp", color: "#4ce07a", greeting: "See you tomorrow!" },
+      { id: "mom", app: "SMS", color: "#ff7eb6" },
+      { id: "boss", app: "Slack", color: "#ff5a4f" },
+      { id: "telegram", app: "Telegram", color: "#4fb3ff" },
+      { id: "whatsapp", app: "WhatsApp", color: "#4ce07a" },
     ],
   };
 })();

@@ -1,131 +1,137 @@
 <!doctype html>
-<html lang="ja">
+<html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Communicator Playground（非公式コミュニティ版）</title>
+  <title>Communicator Playground</title>
   <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
   <header class="top">
     <div class="brand">
       <h1>Communicator Playground</h1>
-      <p>Clicks Communicator のコミュニティ製モック（非公式）</p>
+      <p data-i18n="app.tagline"></p>
     </div>
-    <nav class="tabs" role="tablist">
-      <button type="button" role="tab" data-tab="customize" aria-selected="true">外装カスタマイズ</button>
-      <button type="button" role="tab" data-tab="simulate" aria-selected="false">画面シミュレーター</button>
-    </nav>
+    <div class="top-right">
+      <nav class="tabs" role="tablist">
+        <button type="button" role="tab" data-tab="customize" aria-selected="true" data-i18n="tab.customize"></button>
+        <button type="button" role="tab" data-tab="simulate" aria-selected="false" data-i18n="tab.simulate"></button>
+      </nav>
+      <label class="lang-select">
+        <span class="visually-hidden" data-i18n="lang.label"></span>
+        <select id="lang" data-i18n-aria="lang.label"></select>
+      </label>
+    </div>
   </header>
 
   <main>
     <section id="tab-customize" class="view">
       <div class="stage draggable" id="customize-stage">
-        <p class="stage-hint">ドラッグで回転できます</p>
+        <p class="stage-hint" data-i18n="stage.drag"></p>
       </div>
       <aside class="panel">
-        <h2>表示</h2>
+        <h2 data-i18n="h.view"></h2>
         <div class="row">
-          <button type="button" class="btn" id="view-front">前面</button>
-          <button type="button" class="btn" id="view-back">背面</button>
-          <button type="button" class="btn" id="view-left">左側面</button>
-          <button type="button" class="btn" id="view-right">右側面</button>
-          <button type="button" class="btn" id="view-top">上面</button>
-          <button type="button" class="btn" id="view-spin">ひと回り</button>
+          <button type="button" class="btn" id="view-front" data-i18n="view.front"></button>
+          <button type="button" class="btn" id="view-back" data-i18n="view.back"></button>
+          <button type="button" class="btn" id="view-left" data-i18n="view.left"></button>
+          <button type="button" class="btn" id="view-right" data-i18n="view.right"></button>
+          <button type="button" class="btn" id="view-top" data-i18n="view.top"></button>
+          <button type="button" class="btn" id="view-spin" data-i18n="view.spin"></button>
         </div>
 
-        <h2>本体カラー</h2>
+        <h2 data-i18n="h.body"></h2>
         <div class="swatches" id="body-swatches"></div>
         <p class="picked" id="body-picked"></p>
 
-        <h2>背面カバー</h2>
+        <h2 data-i18n="h.cover"></h2>
         <div class="swatches" id="cover-swatches"></div>
         <p class="picked" id="cover-picked"></p>
+        <p class="note" data-i18n="note.covers"></p>
 
-        <h2>キーボード配列</h2>
+        <h2 data-i18n="h.layout"></h2>
         <select id="kb-layout"></select>
 
-        <h2>アクセサリー（汎用モック）</h2>
+        <h2 data-i18n="h.acc"></h2>
         <div id="accessories"></div>
 
-        <h2>この構成</h2>
+        <h2 data-i18n="h.summary"></h2>
         <ul class="summary" id="config-summary"></ul>
         <div class="row">
-          <button type="button" class="btn" id="share-link">共有リンクをコピー</button>
-          <button type="button" class="btn primary" id="order-btn" disabled>注文する（準備中）</button>
+          <button type="button" class="btn" id="share-link" data-i18n="share.copy"></button>
+          <button type="button" class="btn primary" id="order-btn" disabled data-i18n="order.soon"></button>
         </div>
         <p class="note" id="share-status" aria-live="polite"></p>
-        <p class="note">色や形はイメージです。実物の色味や寸法とは異なります。</p>
+        <p class="note" data-i18n="note.colors"></p>
       </aside>
     </section>
 
     <section id="tab-simulate" class="view" hidden>
       <div class="stage" id="simulate-stage">
-        <p class="stage-hint">端末のキー、またはお使いの PC のキーボードで操作できます</p>
+        <p class="stage-hint" data-i18n="stage.sim"></p>
       </div>
       <aside class="panel">
-        <h2>画面の中身</h2>
-        <label class="check"><input type="radio" name="sim-mode" value="mock" checked> モック OS（Message hub など）</label>
-        <label class="check"><input type="radio" name="sim-mode" value="url"> Web ページ / 開発中のアプリを表示</label>
+        <h2 data-i18n="h.content"></h2>
+        <label class="check"><input type="radio" name="sim-mode" value="mock" checked> <span data-i18n="mode.mock"></span></label>
+        <label class="check"><input type="radio" name="sim-mode" value="url"> <span data-i18n="mode.url"></span></label>
         <form class="url-form" id="sim-url-form" hidden>
           <input type="url" id="sim-url" placeholder="http://localhost:3000" required>
-          <button type="submit" class="btn">表示</button>
-          <p class="note">相手のサイトが埋め込みを禁止している場合（X-Frame-Options など）は表示されません。ローカルの開発サーバーなら通常は表示できます。</p>
+          <button type="submit" class="btn" data-i18n="url.show"></button>
+          <p class="note" data-i18n="url.note"></p>
         </form>
 
-        <h2>画面サイズ</h2>
-        <label class="field">画面密度
+        <h2 data-i18n="h.screen"></h2>
+        <label class="field"><span data-i18n="sim.density"></span>
           <select id="sim-density">
             <option value="400">400 dpi</option>
-            <option value="420" selected>420 dpi（推定値）</option>
+            <option value="420" selected data-i18n="density.est"></option>
             <option value="440">440 dpi</option>
             <option value="480">480 dpi</option>
           </select>
         </label>
-        <label class="field">文字サイズ
+        <label class="field"><span data-i18n="sim.font"></span>
           <select id="sim-font">
-            <option value="1" selected>標準</option>
-            <option value="1.15">大</option>
-            <option value="1.3">最大</option>
+            <option value="1" selected data-i18n="font.normal"></option>
+            <option value="1.15" data-i18n="font.large"></option>
+            <option value="1.3" data-i18n="font.max"></option>
           </select>
         </label>
-        <label class="check"><input type="checkbox" id="sim-safe"> 角丸、パンチホール、ステータスバーの領域を表示</label>
-        <p class="note">表示領域: <strong id="sim-info"></strong></p>
+        <label class="check"><input type="checkbox" id="sim-safe"> <span data-i18n="sim.safe"></span></label>
+        <p class="note"><span data-i18n="sim.area"></span> <strong id="sim-info"></strong></p>
 
-        <h2>通知を送る（Signal LED）</h2>
+        <h2 data-i18n="h.notify"></h2>
         <div class="row" id="sim-notify"></div>
 
-        <h2>専用キー</h2>
-        <label class="field">Clicks Key（赤いキー）の割り当て
+        <h2 data-i18n="h.keys"></h2>
+        <label class="field"><span data-i18n="clicks.label"></span>
           <select id="sim-clicks">
-            <option value="notes">メモを開く</option>
-            <option value="unread">最新の未読を開く</option>
-            <option value="hub">Message hub に戻る</option>
+            <option value="notes" data-i18n="clicks.notes"></option>
+            <option value="unread" data-i18n="clicks.unread"></option>
+            <option value="hub" data-i18n="clicks.hub"></option>
           </select>
         </label>
         <div class="row">
-          <button type="button" class="btn" id="sim-voice">サイドキーを長押し（音声入力）</button>
-          <button type="button" class="btn" id="sim-reset">最初からやり直す</button>
+          <button type="button" class="btn" id="sim-voice" data-i18n="sim.voice"></button>
+          <button type="button" class="btn" id="sim-reset" data-i18n="sim.reset"></button>
         </div>
 
-        <h2>操作のヒント</h2>
+        <h2 data-i18n="h.tips"></h2>
         <ul class="note tips">
-          <li>ロック画面: スペースキー（指紋センサー）で解除</li>
-          <li>Message hub: J / K で移動、Enter で開く、N でメモ</li>
-          <li>会話: 文字を打って Enter で送信、Esc で戻る</li>
-          <li>キーボード面の上でホイール操作をするとスクロール</li>
-          <li>⇧ で次の 1 文字が大文字、alt / 123 で次の 1 文字がキー上段の記号・数字</li>
-          <li>左側面の赤いキルスイッチをクリックするとマイクがオフ</li>
-          <li>左側面の上のキー（長押し）でも音声入力</li>
+          <li data-i18n="tip.lock"></li>
+          <li data-i18n="tip.hub"></li>
+          <li data-i18n="tip.chat"></li>
+          <li data-i18n="tip.scroll"></li>
+          <li data-i18n="tip.mods"></li>
+          <li data-i18n="tip.kill"></li>
+          <li data-i18n="tip.voice"></li>
         </ul>
       </aside>
     </section>
   </main>
 
-  <footer>
-    非公式のコミュニティ制作物です。Clicks Technology とは関係ありません。寸法は公開値（130.5 × 78.63 mm、4.03 インチ 1080 × 1200）と公式の製品画像からの計測値です。側面キーの役割と色は推定です。
-  </footer>
+  <footer data-i18n="footer"></footer>
 
+  <script src="js/i18n.js"></script>
   <script src="js/catalog.js"></script>
   <script src="js/device.js"></script>
   <script src="js/customizer.js"></script>

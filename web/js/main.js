@@ -21,6 +21,19 @@
     fitAll();
   }
 
+  const I18n = window.I18n;
+  I18n.apply();
+  I18n.writeHash();
+  const langSelect = document.getElementById("lang");
+  for (const [code, { name }] of Object.entries(I18n.LANGS)) langSelect.add(new Option(name, code));
+  langSelect.value = I18n.lang;
+  langSelect.addEventListener("change", () => I18n.setLang(langSelect.value));
+  I18n.onChange((lang) => {
+    langSelect.value = lang;
+    window.Customizer.refresh();
+    window.Simulator.refresh();
+  });
+
   window.Customizer.init();
   window.Simulator.init();
   window.Simulator.applyLook(window.Customizer.getState());

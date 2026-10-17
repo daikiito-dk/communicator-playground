@@ -209,22 +209,22 @@ footer {
   pointer-events: none;
 }
 
+/* Signal LED: 右側面キーを囲むリング。中のキーは .side-key.right */
 .led {
   position: absolute;
-  top: calc(1.0 * var(--mm));
-  left: 50%;
-  width: calc(1.2 * var(--mm));
-  height: calc(1.2 * var(--mm));
-  margin-left: calc(-.6 * var(--mm));
-  border-radius: 50%;
-  background: rgba(0, 0, 0, .25);
+  right: calc(-1.0 * var(--mm));
+  top: calc(34.8 * var(--mm));
+  width: calc(1.5 * var(--mm));
+  height: calc(17.6 * var(--mm));
+  border-radius: calc(.75 * var(--mm));
+  background: rgba(0, 0, 0, .12);
 }
 .led.on {
   background: var(--led);
   box-shadow: 0 0 calc(2.4 * var(--mm)) var(--led), 0 0 calc(.6 * var(--mm)) var(--led);
   animation: led-pulse 1.6s ease-in-out infinite;
 }
-@keyframes led-pulse { 50% { opacity: .3; } }
+@keyframes led-pulse { 50% { opacity: .35; } }
 
 /* キーボード（各キーの位置とサイズは device.js が mm で指定） */
 .keyboard {
@@ -281,8 +281,8 @@ footer {
   background: linear-gradient(90deg, #8f9399, #dfe2e6 60%, #b5b8bd);
 }
 .side-key.left { left: calc(-.75 * var(--mm)); width: calc(.9 * var(--mm)); }
-.side-key.upper { top: calc(29.6 * var(--mm)); height: calc(13 * var(--mm)); cursor: pointer; }
-.side-key.lower { top: calc(45.2 * var(--mm)); height: calc(13 * var(--mm)); }
+.side-key.upper { top: calc(26.3 * var(--mm)); height: calc(13 * var(--mm)); cursor: pointer; }
+.side-key.lower { top: calc(42.7 * var(--mm)); height: calc(13 * var(--mm)); }
 .side-key.top {
   top: calc(-.75 * var(--mm));
   left: calc(53 * var(--mm));
@@ -290,12 +290,19 @@ footer {
   height: calc(.9 * var(--mm));
   background: linear-gradient(180deg, #8f9399, #dfe2e6 60%, #b5b8bd);
 }
+.side-key.right {
+  right: calc(-.75 * var(--mm));
+  top: calc(36.2 * var(--mm));
+  width: calc(.9 * var(--mm));
+  height: calc(15.2 * var(--mm));
+  background: linear-gradient(270deg, #8f9399, #dfe2e6 60%, #b5b8bd);
+}
 .side-key.upper.active { background: var(--accent); box-shadow: 0 0 calc(2 * var(--mm)) var(--accent); }
 .side-switch {
   left: calc(-.75 * var(--mm));
-  top: calc(18.5 * var(--mm));
+  top: calc(14.6 * var(--mm));
   width: calc(.9 * var(--mm));
-  height: calc(6 * var(--mm));
+  height: calc(5.8 * var(--mm));
   padding: 0;
   border: 0;
   background: linear-gradient(180deg, #d8dadd 0 50%, #c0283a 50%);

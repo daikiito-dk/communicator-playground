@@ -37,8 +37,6 @@
     const root = el("div", "device", container);
 
     const front = el("div", "face front", root);
-    const led = el("div", "led", front);
-    led.title = "Signal LED（位置は推定）";
     el("div", "glass", front);
     const screen = el("div", "screen", front);
     const inner = el("div", "screen-inner", screen);
@@ -53,6 +51,11 @@
     voiceKey.title = "サイドキー（長押しで音声入力。割り当ては推定）";
     const lowerKey = el("div", "side-key left lower", front);
     lowerKey.title = "サイドキー（役割は推定）";
+    // LED はキーの下に重ね、キーの周りにはみ出した部分がリングとして光ります。
+    const led = el("div", "led", front);
+    led.title = "Signal LED（右側面キーの周りが光ります）";
+    const rightKey = el("div", "side-key right", front);
+    rightKey.title = "右側面のキー（Signal LED 付き。役割は未確認）";
     const killSwitch = el("button", "side-switch", front);
     killSwitch.type = "button";
     killSwitch.tabIndex = -1;

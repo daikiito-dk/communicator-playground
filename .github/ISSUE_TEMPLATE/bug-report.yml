@@ -1,0 +1,32 @@
+name: 不具合・改善の提案
+description: Web ページ（外装カスタマイズ、シミュレーター）やスクリプトの不具合、改善の提案
+labels: ["bug"]
+body:
+  - type: dropdown
+    id: area
+    attributes:
+      label: 対象
+      options:
+        - 外装カスタマイズ
+        - 画面シミュレーター
+        - エミュレーター設定（avd/、tools/）
+        - ドキュメント
+        - その他
+    validations:
+      required: true
+  - type: textarea
+    id: what
+    attributes:
+      label: 起きたこと、または提案
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: 再現手順
+      description: 共有リンク（URL）があれば貼ってください
+  - type: input
+    id: env
+    attributes:
+      label: ブラウザと OS
+      placeholder: Chrome 141 / macOS 26 など

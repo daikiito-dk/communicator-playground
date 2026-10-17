@@ -1,0 +1,52 @@
+name: 実機の寸法・画面情報の報告
+description: 実機で測った寸法や画面密度を共有して、モックの精度を上げます
+title: "[実測] "
+labels: ["measurement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        実機をお持ちの方の測定結果を集めています。わかる項目だけで大丈夫です。
+        発売前の機密情報（NDA の対象になっている情報）は投稿しないでください。
+  - type: dropdown
+    id: body
+    attributes:
+      label: 本体カラー
+      options: [Smoke, Onyx, Clover, その他]
+    validations:
+      required: true
+  - type: dropdown
+    id: layout
+    attributes:
+      label: キーボード配列
+      options: [QWERTY, AZERTY, QWERTZ, 韓国語, アラビア語]
+  - type: input
+    id: build
+    attributes:
+      label: ソフトウェアのバージョン
+      description: 設定 > デバイス情報 のビルド番号など
+  - type: textarea
+    id: screen
+    attributes:
+      label: 画面の情報
+      description: "`adb shell wm size` と `adb shell wm density` の出力をそのまま貼ってください"
+      render: shell
+  - type: textarea
+    id: dimensions
+    attributes:
+      label: 寸法（mm）
+      description: 測った箇所と測り方（ノギス、定規など）も書いてください
+      placeholder: |
+        画面の上端から本体上端まで: 
+        キーボード上端から本体下端まで: 
+        カメラの中心位置（背面の左上から）: 
+        サイドキーの位置と長さ: 
+  - type: textarea
+    id: photos
+    attributes:
+      label: 写真
+      description: 真正面からの写真に定規を添えて撮ると、作図に使えます
+  - type: textarea
+    id: notes
+    attributes:
+      label: その他・気づいたこと

@@ -1,0 +1,48 @@
+name: 日本語入力の検証結果
+description: 物理キーボードでの日本語入力（IME）を試した結果を共有します
+title: "[日本語入力] "
+labels: ["japanese-input"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        結果は [日本語入力ガイド](https://github.com/daikiito-dk/communicator-playground/blob/main/docs/japanese-input-guide.md) にまとめます。
+  - type: input
+    id: ime
+    attributes:
+      label: IME とバージョン
+      placeholder: Gboard 15.x / ATOK など
+    validations:
+      required: true
+  - type: dropdown
+    id: layout
+    attributes:
+      label: キーボード配列
+      options: [QWERTY, AZERTY, QWERTZ, 韓国語, アラビア語]
+    validations:
+      required: true
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: できたこと
+      options:
+        - label: ローマ字入力で変換できた
+        - label: 変換候補を物理キーだけで選べた
+        - label: 日本語と英数を切り替えられた
+        - label: 全角と半角、カタカナに変換できた
+        - label: 句読点、長音、かぎかっこを入力できた
+        - label: サイドキーの音声入力で日本語を入力できた
+  - type: input
+    id: switch-key
+    attributes:
+      label: 日本語と英数の切り替え方法
+      placeholder: Ctrl+Space など
+  - type: textarea
+    id: settings
+    attributes:
+      label: 設定したこと
+      description: 物理キーボードのレイアウト設定、IME 側の設定など
+  - type: textarea
+    id: problems
+    attributes:
+      label: うまくいかなかったこと

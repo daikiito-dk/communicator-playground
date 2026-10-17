@@ -11,7 +11,9 @@ Clicks Communicator の外装を着せ替えて見たり、モック画面の中
 
 ## すぐに試す
 
-ビルドは不要です。静的ファイルを配信するだけで動きます。
+**公開ページ: https://daikiito-dk.github.io/communicator-playground/**
+
+手元で動かす場合も、ビルドは不要です。静的ファイルを配信するだけで動きます。
 
 ```bash
 cd web
@@ -61,6 +63,22 @@ docs/                 キーボード優先の開発チェックリスト、日�
 | 法人向けデスクトップ版 | 同じ Web コードを Electron または Tauri で包み、オフラインで動くシミュレーターとして配布 | 外部ライブラリとビルド手順に依存しないので、そのまま包めます |
 
 販売や配布を始める前に、Clicks の名称、ロゴ、製品画像の扱いについて Clicks から許諾を得る必要があります。dbrand などの他社アクセサリーを扱う場合も同じです。
+
+## 参加するには
+
+実機をお持ちの方の情報を特に募集しています。[Issue](https://github.com/daikiito-dk/communicator-playground/issues/new/choose) のテンプレートから投稿してください。
+
+- **実機の寸法・画面情報の報告:** 画面密度（`adb shell wm density`）、カメラやキーの位置など。モックの精度を上げるのに使います
+- **日本語入力の検証結果:** IME ごとの使い勝手。[日本語入力ガイド](docs/japanese-input-guide.md) にまとめます
+- **不具合・改善の提案:** Web ページやスクリプトについて
+
+発売前の機密情報（NDA の対象になっている情報）や、Clicks の公式画像の転載は投稿しないでください。
+
+`main` に push すると、`web/` の内容が GitHub Pages に自動で公開されます（`.github/workflows/pages.yml`）。
+
+## ライセンス
+
+[MIT](LICENSE)。Clicks、Communicator の名称と商標は Clicks Technology に帰属します。
 
 ## 既知の制限
 

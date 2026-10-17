@@ -14,7 +14,7 @@
     "帰りに牛乳買ってきて",
   ];
   const VOICE_TEXT = "（音声入力）10分後に着きます";
-  const STATUS_BAR_DP = 24;
+  const STATUS_BAR_DP = 44;
 
   let state;
   let device;
@@ -31,6 +31,7 @@
       fontScale: 1,
       safe: false,
       clicksKey: "notes",
+      killed: false,
       ...keep,
       screen: "lock",
       selected: 0,
@@ -38,6 +39,7 @@
       input: "",
       notes: "",
       shift: false,
+      alt: false,
       recording: false,
       toast: null,
       stickBottom: false,
@@ -61,6 +63,18 @@
     };
   }
 
+  // パンチホールと画面の角丸を、表示中の dp に換算します（実寸は device.js の PUNCH / SCREEN）。
+  function cutout() {
+    const { SCREEN, PUNCH } = window.CommunicatorDevice;
+    const dpPerMm = logicalSize().w / SCREEN.w;
+    return {
+      x: (PUNCH.cx - SCREEN.x) * dpPerMm,
+      y: (PUNCH.cy - SCREEN.y) * dpPerMm,
+      r: (PUNCH.d / 2 + 0.4) * dpPerMm,
+      radius: 4.6 * dpPerMm,
+    };
+  }
+
   function now() {
     return new Date().toLocaleTimeString("ja-JP", { hour: "2-digit", minute: "2-digit" });
   }
@@ -76,7 +90,8 @@
   // --- 描画 ---------------------------------------------------------------
 
   function statusBar() {
-    return `<div class="sb"><span class="sb-time">${now()}</span><span>${state.shift ? "⇧ " : ""}5G ▮▮▮ 82%</span></div>`;
+    const mods = (state.shift ? "⇧ " : "") + (state.alt ? "alt " : "") + (state.killed ? "マイク OFF " : "");
+    return `<div class="sb"><span class="sb-time">${now()}</span><span>${mods}5G ▮▮▮ 82%</span></div>`;
   }
 
   function lockScreen() {
@@ -149,7 +164,13 @@
           <div class="hub-text"><div class="hub-name">${escapeHtml(t.name)}</div><div class="hub-last">${escapeHtml(t.text)}</div></div>
         </div>`);
     }
-    if (state.recording) {
+    if (state.recording && state.killed) {
+      parts.push(`
+        <div class="voice-overlay">
+          <div>マイクはオフです</div>
+          <div class="note-sm">キルスイッチ（左側面）を戻すと使えます</div>
+        </div>`);
+    } else if (state.recording) {
       parts.push(`
         <div class="voice-overlay">
           <div class="bars">${"<span></span>".repeat(5)}</div>
@@ -161,7 +182,8 @@
       parts.push(`
         <div class="safe-overlay">
           <div class="safe-top" style="height:${STATUS_BAR_DP}px">ステータスバー ${STATUS_BAR_DP}dp</div>
-          <div class="safe-frame"></div>
+          <div class="safe-frame" style="border-radius:${cutout().radius}px"></div>
+          <div class="safe-cutout" style="left:${cutout().x - cutout().r}px;top:${cutout().y - cutout().r}px;width:${cutout().r * 2}px;height:${cutout().r * 2}px"></div>
         </div>`);
     }
     return parts.join("");
@@ -320,7 +342,12 @@
       state.shift = !state.shift;
       return render();
     }
-    if (value === "Alt" || value === "Sym") return;
+    if (value === "Alt" || value === "Sym") {
+      state.alt = !state.alt;
+      return render();
+    }
+    if (value === "Apps") return go("hub");
+    if (value === "Ctrl") return;
 
     if (state.screen === "lock") {
       if (value === " " || value === "Enter") go("hub");
@@ -346,8 +373,10 @@
     }
     if (value.length === 1) {
       let ch = value;
-      if (!fromHost && state.shift) ch = ch.toUpperCase();
+      if (!fromHost && state.alt) ch = device.subFor(value.toLowerCase()) || ch;
+      else if (!fromHost && state.shift) ch = ch.toUpperCase();
       state.shift = false;
+      state.alt = false;
       insertText(ch);
     }
   }
@@ -363,6 +392,7 @@
     if (!state.recording) return;
     state.recording = false;
     device.voiceKey.classList.remove("active");
+    if (state.killed) return render();
     if (state.screen === "chat") state.input += VOICE_TEXT;
     else {
       if (state.screen !== "notes") state.screen = "notes";
@@ -445,12 +475,17 @@
     $("sim-reset").addEventListener("click", () => {
       const { mode, url, density, fontScale, safe, clicksKey } = state;
       state = initialState({ mode, url, density, fontScale, safe, clicksKey });
+      device.setKilled(false);
       render();
     });
   }
 
   function setupInput() {
     device.onKey((value) => handleKey(value));
+    device.onKillSwitch((on) => {
+      state.killed = on;
+      render();
+    });
     holdToTalk(device.voiceKey);
 
     device.inner.addEventListener("click", (e) => {

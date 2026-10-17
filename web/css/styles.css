@@ -143,7 +143,7 @@ footer {
 .face {
   position: absolute;
   inset: 0;
-  border-radius: calc(9 * var(--mm));
+  border-radius: calc(8.5 * var(--mm));
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
 }
@@ -152,6 +152,7 @@ footer {
   background: var(--body);
   box-shadow:
     inset 0 0 0 calc(.35 * var(--mm)) rgba(255, 255, 255, .14),
+    inset 0 calc(-.6 * var(--mm)) calc(1 * var(--mm)) rgba(0, 0, 0, .12),
     0 calc(6 * var(--mm)) calc(14 * var(--mm)) rgba(0, 0, 0, .55);
 }
 
@@ -171,30 +172,52 @@ footer {
   outline-offset: calc(.2 * var(--mm));
 }
 
+/* 前面ガラス（黒い縁取りを含む）と表示領域 */
+.glass {
+  position: absolute;
+  left: calc(3.1 * var(--mm));
+  top: calc(3.05 * var(--mm));
+  width: calc(72.4 * var(--mm));
+  height: calc(81.45 * var(--mm));
+  border-radius: calc(6.7 * var(--mm));
+  background: #050506;
+  box-shadow: inset 0 0 0 calc(.25 * var(--mm)) rgba(255, 255, 255, .08);
+}
+
 .screen {
   position: absolute;
-  left: calc(5.08 * var(--mm));
-  top: calc(5.08 * var(--mm));
+  left: calc(5.1 * var(--mm));
+  top: calc(5.5 * var(--mm));
   width: calc(68.46 * var(--mm));
   height: calc(76.07 * var(--mm));
   overflow: hidden;
-  border-radius: calc(3.2 * var(--mm));
+  border-radius: calc(4.6 * var(--mm));
   background: #000;
-  box-shadow: 0 0 0 calc(.5 * var(--mm)) #000;
 }
 .screen-inner { position: absolute; left: 0; top: 0; overflow: hidden; transform-origin: 0 0; }
 .screen-inner iframe { display: block; border: 0; background: #fff; }
 
+.punch {
+  position: absolute;
+  left: calc((10.3 - 1.9) * var(--mm));
+  top: calc((10.3 - 1.9) * var(--mm));
+  width: calc(3.8 * var(--mm));
+  height: calc(3.8 * var(--mm));
+  border-radius: 50%;
+  background: radial-gradient(circle at 42% 40%, #2c3442 0 14%, #050506 34%);
+  box-shadow: 0 0 0 calc(.25 * var(--mm)) #0b0b0c;
+  pointer-events: none;
+}
+
 .led {
   position: absolute;
-  top: calc(1.8 * var(--mm));
+  top: calc(1.0 * var(--mm));
   left: 50%;
-  width: calc(1.4 * var(--mm));
-  height: calc(1.4 * var(--mm));
-  margin-left: calc(-.7 * var(--mm));
+  width: calc(1.2 * var(--mm));
+  height: calc(1.2 * var(--mm));
+  margin-left: calc(-.6 * var(--mm));
   border-radius: 50%;
-  background: #0a0a0a;
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .1);
+  background: rgba(0, 0, 0, .25);
 }
 .led.on {
   background: var(--led);
@@ -203,78 +226,135 @@ footer {
 }
 @keyframes led-pulse { 50% { opacity: .3; } }
 
+/* キーボード（各キーの位置とサイズは device.js が mm で指定） */
 .keyboard {
   position: absolute;
-  left: calc(5.6 * var(--mm));
-  right: calc(5.6 * var(--mm));
-  top: calc(85.5 * var(--mm));
-  bottom: calc(9 * var(--mm));
+  left: 0;
+  right: 0;
+  top: calc(88.5 * var(--mm));
+  height: calc(37 * var(--mm));
+}
+.key {
+  position: absolute;
   display: flex;
   flex-direction: column;
-  gap: calc(1.5 * var(--mm));
-}
-.krow { flex: 1; display: flex; gap: calc(1.1 * var(--mm)); }
-.key {
-  flex: 1 1 0;
-  min-width: 0;
+  align-items: center;
+  justify-content: center;
+  gap: calc(.15 * var(--mm));
   padding: 0;
   border: 0;
-  border-radius: calc(2.2 * var(--mm));
-  background: var(--key-bg);
+  border-radius: calc(3 * var(--mm)) / calc(3.4 * var(--mm));
+  background: radial-gradient(ellipse at 50% 30%, color-mix(in srgb, var(--key-bg), #fff 14%), var(--key-bg) 70%);
   color: var(--key-fg);
-  font: 600 calc(3 * var(--mm)) / 1 -apple-system, "Helvetica Neue", sans-serif;
+  font-family: -apple-system, "Helvetica Neue", sans-serif;
   box-shadow:
-    inset 0 calc(-.4 * var(--mm)) 0 rgba(0, 0, 0, .3),
-    inset 0 calc(.25 * var(--mm)) 0 rgba(255, 255, 255, .12);
+    0 calc(.35 * var(--mm)) calc(.5 * var(--mm)) rgba(0, 0, 0, .35),
+    inset 0 calc(-.35 * var(--mm)) 0 rgba(0, 0, 0, .35);
   cursor: pointer;
   transition: transform .08s, filter .08s;
 }
-.key.small { font-size: calc(2.2 * var(--mm)); font-weight: 500; }
-.key.clicks { color: var(--accent); }
-.key.pressed, .key:active { transform: translateY(calc(.3 * var(--mm))); filter: brightness(1.3); }
+.key .main { font-size: calc(3.0 * var(--mm)); font-weight: 600; line-height: 1; }
+.key .sub { font-size: calc(1.9 * var(--mm)); font-weight: 500; line-height: 1; opacity: .85; }
+.key.mod .main { font-size: calc(2.6 * var(--mm)); }
+.key.small .main { font-size: calc(1.75 * var(--mm)); font-weight: 600; }
+.key.round { border-radius: 50%; }
+.key.space { border-radius: calc(2.5 * var(--mm)); }
+.key.clicks { background: radial-gradient(ellipse at 50% 30%, #c2414f, #9c2a37 70%); color: #fff; }
+.key.pressed, .key:active { transform: translateY(calc(.3 * var(--mm))); filter: brightness(1.35); }
 .device.url-mode .key { cursor: default; }
 
+.speaker {
+  position: absolute;
+  top: calc(125.9 * var(--mm));
+  width: calc(9.7 * var(--mm));
+  height: calc(1.4 * var(--mm));
+  border-radius: calc(.7 * var(--mm));
+  background: #121213;
+}
+.speaker.left { left: calc(12.35 * var(--mm)); }
+.speaker.right { left: calc(56.55 * var(--mm)); }
+
+/* サイドキーとキルスイッチ（位置は正面図と側面写真から計測） */
 .side-key, .side-switch {
   position: absolute;
-  width: calc(.8 * var(--mm));
-  border-radius: calc(.4 * var(--mm));
+  border-radius: calc(.45 * var(--mm));
+  background: linear-gradient(90deg, #8f9399, #dfe2e6 60%, #b5b8bd);
 }
-.side-key { right: calc(-.7 * var(--mm)); background: linear-gradient(90deg, #9ea2a8, #dcdfe3); }
-.side-key.power { top: calc(26 * var(--mm)); height: calc(9 * var(--mm)); }
-.side-key.voice { top: calc(40 * var(--mm)); height: calc(13 * var(--mm)); cursor: pointer; }
-.side-key.voice.active { background: var(--accent); box-shadow: 0 0 calc(2 * var(--mm)) var(--accent); }
+.side-key.left { left: calc(-.75 * var(--mm)); width: calc(.9 * var(--mm)); }
+.side-key.upper { top: calc(29.6 * var(--mm)); height: calc(13 * var(--mm)); cursor: pointer; }
+.side-key.lower { top: calc(45.2 * var(--mm)); height: calc(13 * var(--mm)); }
+.side-key.top {
+  top: calc(-.75 * var(--mm));
+  left: calc(53 * var(--mm));
+  width: calc(11.8 * var(--mm));
+  height: calc(.9 * var(--mm));
+  background: linear-gradient(180deg, #8f9399, #dfe2e6 60%, #b5b8bd);
+}
+.side-key.upper.active { background: var(--accent); box-shadow: 0 0 calc(2 * var(--mm)) var(--accent); }
 .side-switch {
-  left: calc(-.7 * var(--mm));
-  top: calc(28 * var(--mm));
+  left: calc(-.75 * var(--mm));
+  top: calc(18.5 * var(--mm));
+  width: calc(.9 * var(--mm));
   height: calc(6 * var(--mm));
-  background: linear-gradient(270deg, #9ea2a8, #dcdfe3);
+  padding: 0;
+  border: 0;
+  background: linear-gradient(180deg, #d8dadd 0 50%, #c0283a 50%);
+  cursor: pointer;
+}
+.device.killed .side-switch { background: linear-gradient(180deg, #c0283a 0 50%, #d8dadd 50%); }
+
+/* 背面: ドット柄のチャージングカバー、中央の盛り上がり、カメラ */
+.back::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(circle, rgba(0, 0, 0, .3) calc(.35 * var(--mm)), transparent calc(.45 * var(--mm)));
+  background-size: calc(2.2 * var(--mm)) calc(2.2 * var(--mm));
+  pointer-events: none;
+}
+.plateau {
+  position: absolute;
+  left: calc(9 * var(--mm));
+  right: calc(9 * var(--mm));
+  top: calc(24 * var(--mm));
+  bottom: calc(14 * var(--mm));
+  border-radius: calc(4 * var(--mm));
+  background: linear-gradient(160deg, rgba(255, 255, 255, .08), rgba(0, 0, 0, .1));
+  box-shadow:
+    0 0 calc(4 * var(--mm)) calc(1.5 * var(--mm)) rgba(0, 0, 0, .14),
+    inset 0 calc(.3 * var(--mm)) 0 rgba(255, 255, 255, .12);
 }
 
 .camera {
   position: absolute;
-  top: calc(6 * var(--mm));
-  left: calc(6 * var(--mm));
+  top: calc(5.5 * var(--mm));
+  left: calc(5.5 * var(--mm));
   display: flex;
   align-items: center;
-  gap: calc(2.5 * var(--mm));
-  width: calc(22 * var(--mm));
-  height: calc(13 * var(--mm));
-  padding: 0 calc(1.5 * var(--mm));
-  border-radius: calc(6.5 * var(--mm));
-  background: rgba(10, 10, 12, .92);
-  box-shadow: 0 calc(.4 * var(--mm)) calc(1 * var(--mm)) rgba(0, 0, 0, .4);
+  gap: calc(1.4 * var(--mm));
+  width: calc(19 * var(--mm));
+  height: calc(11.5 * var(--mm));
+  padding: 0 calc(1.6 * var(--mm));
+  border-radius: calc(5.75 * var(--mm));
+  background: #0d0d0f;
+  box-shadow:
+    0 0 0 calc(.9 * var(--mm)) #c9ccd0,
+    0 0 0 calc(1.15 * var(--mm)) #7d8085,
+    0 calc(.6 * var(--mm)) calc(1.4 * var(--mm)) calc(1 * var(--mm)) rgba(0, 0, 0, .35);
 }
 .lens {
-  width: calc(10 * var(--mm));
-  height: calc(10 * var(--mm));
+  width: calc(8 * var(--mm));
+  height: calc(8 * var(--mm));
   border-radius: 50%;
   background: radial-gradient(circle at 40% 40%, #3a4a66 0 12%, #0b0d12 30%, #1f2228 62%, #4a4d55 64%, #15171b 70%);
 }
 .flash {
-  width: calc(3.2 * var(--mm));
-  height: calc(3.2 * var(--mm));
-  border-radius: 50%;
-  background: radial-gradient(circle, #fff7d6, #c9b98a);
+  width: calc(4.4 * var(--mm));
+  height: calc(4.4 * var(--mm));
+  border-radius: calc(.8 * var(--mm));
+  background:
+    repeating-linear-gradient(90deg, rgba(0, 0, 0, .12) 0 1px, transparent 1px 3px),
+    linear-gradient(160deg, #a7a9ad, #6d7075);
 }
 
 .mag-ring {
@@ -333,11 +413,12 @@ footer {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  height: 24px;
-  padding: 0 16px;
+  height: 44px;
+  padding: 0 18px 0 58px;
   font-size: 11px;
   color: #e4e4ea;
 }
+.sb-time { font-size: 15px; font-weight: 600; }
 .lock-body {
   flex: 1;
   display: flex;
@@ -426,7 +507,7 @@ footer {
 
 .toast-n {
   position: absolute;
-  top: 28px;
+  top: 46px;
   left: 8px;
   right: 8px;
   display: flex;
@@ -470,6 +551,7 @@ footer {
   color: #ffd0d0;
   background: repeating-linear-gradient(45deg, rgba(255, 80, 80, .35) 0 6px, transparent 6px 12px);
 }
-.safe-frame { position: absolute; inset: 0; border: 2px dashed rgba(255, 90, 90, .9); border-radius: 19px; }
+.safe-frame { position: absolute; inset: 0; border: 2px dashed rgba(255, 90, 90, .9); }
+.safe-cutout { position: absolute; border: 2px dashed rgba(255, 210, 90, .95); border-radius: 50%; }
 
 .url-empty { margin: auto; padding: 24px; text-align: center; color: #8d8d96; line-height: 1.6; }

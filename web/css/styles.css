@@ -285,8 +285,8 @@ footer {
 .side-key.lower { top: calc(42.7 * var(--mm)); height: calc(13 * var(--mm)); }
 .side-key.top {
   top: calc(-.75 * var(--mm));
-  left: calc(53 * var(--mm));
-  width: calc(11.8 * var(--mm));
+  left: calc(52.9 * var(--mm));
+  width: calc(12.6 * var(--mm));
   height: calc(.9 * var(--mm));
   background: linear-gradient(180deg, #8f9399, #dfe2e6 60%, #b5b8bd);
 }
@@ -296,6 +296,17 @@ footer {
   width: calc(.9 * var(--mm));
   height: calc(15.2 * var(--mm));
   background: linear-gradient(270deg, #8f9399, #dfe2e6 60%, #b5b8bd);
+}
+/* 上面のイヤホンジャック。正面からは縁の切り欠きとして見せます */
+.jack {
+  position: absolute;
+  top: calc(-.3 * var(--mm));
+  left: calc((19.5 - 1.8) * var(--mm));
+  width: calc(3.6 * var(--mm));
+  height: calc(.9 * var(--mm));
+  border-radius: 0 0 calc(1.8 * var(--mm)) calc(1.8 * var(--mm));
+  background: #0c0c0d;
+  box-shadow: inset 0 calc(-.2 * var(--mm)) 0 rgba(255, 255, 255, .15);
 }
 .side-key.upper.active { background: var(--accent); box-shadow: 0 0 calc(2 * var(--mm)) var(--accent); }
 .side-switch {

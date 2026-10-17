@@ -46,7 +46,8 @@
     el("div", "speaker right", front);
 
     const powerKey = el("div", "side-key top", front);
-    powerKey.title = "上面のキー（役割は推定: 電源）";
+    powerKey.title = "電源キー（上面）";
+    el("div", "jack", front).title = "3.5 mm イヤホンジャック（上面）";
     const voiceKey = el("div", "side-key left upper", front);
     voiceKey.title = "サイドキー（長押しで音声入力。割り当ては推定）";
     const lowerKey = el("div", "side-key left lower", front);

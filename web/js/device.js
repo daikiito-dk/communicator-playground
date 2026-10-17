@@ -19,14 +19,25 @@
     rowY: [93.4, 102.5, 111.6],
     bottomY: 120.0,
     keyW: 6.0,
-    keyH: 7.6,
+    keyH: 6.9,
     roundH: 5.6,
     spaceH: 5.0,
   };
 
   // 本体の外形（mm）。厚みは公開値の 12 mm、角の半径は正面図からの計測値。
-  const BODY = { w: 78.63, h: 130.5, t: 12, r: 8.5 };
+  // wall は側面フレームの高さ。背面はフレームの縁から内側へなだらかに盛り上がります。
+  const BODY = { w: 78.63, h: 130.5, t: 12, r: 8.5, wall: 7.7 };
   const CORNER_SEGMENTS = 6;
+  // 背面の断面（縁からの距離 d と、前面からの厚み t、mm）。上面写真と側面写真からの計測値。
+  const BACK_PROFILE = [
+    { d: 0, t: 7.7 },
+    { d: 3, t: 9.0 },
+    { d: 6, t: 9.8 },
+    { d: 9, t: 10.5 },
+    { d: 12, t: 11.3 },
+    { d: 15, t: 11.9 },
+  ];
+  const LIGHT = normalize([-0.35, -0.55, -0.75]);
 
   // 側面の部品（mm）。pos は上面なら本体左端から、左右の側面なら本体上端からの距離。
   const SIDE_PARTS = {
@@ -43,7 +54,7 @@
       { cls: "s-led", from: 34.8, to: 52.4, title: "Signal LED" },
       { cls: "s-key", from: 36.2, to: 51.4, title: "右側面のキー" },
     ],
-    bottom: [],
+    bottom: [{ cls: "s-usb", from: 34.8, to: 43.8, title: "USB-C" }],
   };
 
   const mmCalc = (v) => `calc(${v} * var(--mm))`;
@@ -55,17 +66,118 @@
     return node;
   }
 
-  // 厚み方向の帯（幅 width mm × 厚み BODY.t）を、本体中心から (x, y) の位置に、外向きの法線が角度 deg を向くように置きます。
+  function normalize(v) {
+    const l = Math.hypot(...v);
+    return v.map((c) => c / l);
+  }
+  const sub3 = (a, b) => [a[0] - b[0], a[1] - b[1], a[2] - b[2]];
+  const dot3 = (a, b) => a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
+  const cross3 = (a, b) => [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]];
+
+  // 側面フレームの帯（幅 width mm × 高さ BODY.wall）を、本体中心から (x, y) の位置に、外向きの法線が角度 deg を向くように置きます。
   // rotateX(90deg) で帯を前後方向に起こし、rotateZ で法線の向きを合わせます。帯の下端が前面側になります。
   function sideStrip(parent, cls, x, y, deg, width) {
     const strip = el("div", "side " + cls, parent);
+    const z = BODY.t / 2 - BODY.wall / 2;
     strip.style.width = mmCalc(width);
-    strip.style.height = mmCalc(BODY.t);
+    strip.style.height = mmCalc(BODY.wall);
     strip.style.left = `calc(50% - ${width / 2} * var(--mm))`;
-    strip.style.top = `calc(50% - ${BODY.t / 2} * var(--mm))`;
+    strip.style.top = `calc(50% - ${BODY.wall / 2} * var(--mm))`;
     strip.style.transform =
-      `translate3d(${mmCalc(x)}, ${mmCalc(y)}, 0) rotateZ(${deg + 90}deg) rotateX(90deg)`;
+      `translate3d(${mmCalc(x)}, ${mmCalc(y)}, ${mmCalc(z)}) rotateZ(${deg + 90}deg) rotateX(90deg)`;
     return strip;
+  }
+
+  // 縁から d mm 内側の角丸長方形の輪郭（本体中心が原点、z は前面方向が正）。
+  // どの輪郭も同じ角度で点を取るので、隣り合う輪郭の間は平らな台形になります。
+  function ring(d, z) {
+    const { w, h, r } = BODY;
+    const rr = Math.max(2, r - d * 0.3);
+    const ix = w / 2 - d - rr;
+    const iy = h / 2 - d - rr;
+    const corners = [[ix, -iy, -90], [ix, iy, 0], [-ix, iy, 90], [-ix, -iy, 180]];
+    const pts = [];
+    for (const [cx, cy, start] of corners) {
+      for (let k = 0; k <= CORNER_SEGMENTS; k++) {
+        const a = ((start + (k * 90) / CORNER_SEGMENTS) * Math.PI) / 180;
+        pts.push([cx + rr * Math.cos(a), cy + rr * Math.sin(a), z]);
+      }
+    }
+    return { pts, rr };
+  }
+
+  // 計測点の間を step mm ごとに直線補間します。
+  function smoothProfile(step) {
+    const out = [];
+    const last = BACK_PROFILE[BACK_PROFILE.length - 1];
+    for (let d = 0; d < last.d; d += step) {
+      const i = BACK_PROFILE.findIndex((p) => p.d > d) - 1;
+      const a = BACK_PROFILE[i];
+      const b = BACK_PROFILE[i + 1];
+      out.push({ d, t: a.t + ((b.t - a.t) * (d - a.d)) / (b.d - a.d) });
+    }
+    out.push(last);
+    return out;
+  }
+
+  // 平らな四角形（P0→P1→P2→P3）を、matrix3d と clip-path で 1 枚の要素として描きます。
+  function backPanels(root) {
+    const panels = [];
+    const rings = smoothProfile(1.5).map((p) => ring(p.d, BODY.t / 2 - p.t).pts);
+    for (let b = 0; b < rings.length - 1; b++) {
+      const outer = rings[b];
+      const inner = rings[b + 1];
+      for (let i = 0; i < outer.length; i++) {
+        const j = (i + 1) % outer.length;
+        const quad = [outer[i], outer[j], inner[j], inner[i]];
+        if (Math.hypot(...sub3(quad[1], quad[0])) < 1e-3) continue;
+        const node = el("div", "chamfer", root);
+        panels.push({ node, quad });
+      }
+    }
+    return panels;
+  }
+
+  function layoutPanels(panels, mm) {
+    const { w, h } = BODY;
+    for (const { node, quad } of panels) {
+      const [p0, p1, , p3] = quad;
+      const e1 = normalize(sub3(p1, p0));
+      let n = normalize(cross3(sub3(p1, p0), sub3(p3, p0)));
+      const mid = quad.reduce((a, p) => [a[0] + p[0] / 4, a[1] + p[1] / 4, a[2] + p[2] / 4], [0, 0, 0]);
+      if (dot3(n, [mid[0], mid[1], -40]) < 0) n = n.map((c) => -c);
+      const e2 = cross3(n, e1);
+
+      // 隣の面との継ぎ目が透けないよう、重心から少しだけ広げます。
+      const local = quad.map((p) => {
+        const q = sub3(p, p0);
+        return [dot3(q, e1), dot3(q, e2)];
+      });
+      const cu = local.reduce((a, q) => a + q[0] / 4, 0);
+      const cv = local.reduce((a, q) => a + q[1] / 4, 0);
+      const grown = local.map(([u, v]) => {
+        const du = u - cu;
+        const dv = v - cv;
+        const l = Math.hypot(du, dv) || 1;
+        return [u + (du / l) * 0.08, v + (dv / l) * 0.08];
+      });
+      const minU = Math.min(...grown.map((q) => q[0]));
+      const minV = Math.min(...grown.map((q) => q[1]));
+      const maxU = Math.max(...grown.map((q) => q[0]));
+      const maxV = Math.max(...grown.map((q) => q[1]));
+      const o = [
+        (p0[0] + minU * e1[0] + minV * e2[0] + w / 2) * mm,
+        (p0[1] + minU * e1[1] + minV * e2[1] + h / 2) * mm,
+        (p0[2] + minU * e1[2] + minV * e2[2]) * mm,
+      ];
+      node.style.width = (maxU - minU) * mm + "px";
+      node.style.height = (maxV - minV) * mm + "px";
+      node.style.clipPath = `polygon(${grown
+        .map(([u, v]) => `${((u - minU) * mm).toFixed(2)}px ${((v - minV) * mm).toFixed(2)}px`)
+        .join(", ")})`;
+      node.style.transform = `matrix3d(${[...e1, 0, ...e2, 0, ...n, 0, ...o, 1].map((c) => +c.toFixed(5)).join(",")})`;
+      node.style.setProperty("--shade", (0.78 + 0.3 * Math.max(0, dot3(n, LIGHT))).toFixed(3));
+    }
   }
 
   function buildSides(root) {
@@ -79,8 +191,8 @@
     for (const [name, s] of Object.entries(straights)) {
       const strip = sideStrip(root, "side-" + name, s.x, s.y, s.deg, s.len);
       for (const part of SIDE_PARTS[name]) {
-        // 帯の x 方向は、上面では左→右、右側面では上→下、左側面では下→上を向きます。
-        const a = name === "left" ? h - r - part.to : part.from - r;
+        // 帯の x 方向は、上面では左→右、右側面では上→下、下面では右→左、左側面では下→上を向きます。
+        const a = name === "left" ? h - r - part.to : name === "bottom" ? w - r - part.to : part.from - r;
         const node = el("div", "side-part " + part.cls, strip);
         node.title = part.title;
         node.style.left = mmCalc(a);
@@ -108,9 +220,11 @@
 
   function create(container, options = {}) {
     const root = el("div", "device", container);
+    let panels = [];
     if (options.solid) {
       root.classList.add("solid");
       buildSides(root);
+      panels = backPanels(root);
     }
 
     const front = el("div", "face front", root);
@@ -141,6 +255,13 @@
 
     const back = el("div", "face back", root);
     el("div", "plateau", back);
+    // 立体表示では、カメラ部を背面から盛り上がった塊として、薄い板を重ねて厚みを出します。
+    if (options.solid) {
+      for (let k = 1; k <= 8; k++) {
+        const layer = el("div", "camera-layer", back);
+        layer.style.setProperty("--k", k);
+      }
+    }
     const camera = el("div", "camera", back);
     el("div", "lens", camera);
     el("div", "flash", camera);
@@ -254,6 +375,7 @@
         mm = Math.max(1.5, Math.min(h / 134, w / 84, 5.4));
         root.style.setProperty("--mm", mm + "px");
         applyScale();
+        layoutPanels(panels, mm);
       },
     };
 

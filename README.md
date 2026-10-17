@@ -5,7 +5,7 @@ Clicks Communicator の外装を着せ替えて見たり、モック画面の中
 > 非公式のコミュニティ制作物です。Clicks Technology とは関係ありません。
 > 寸法は公開値（130.5 × 78.63 mm、4.03 インチ 1080 × 1200）と、公式の製品画像からの計測値です（[計測値と出典](docs/measurements.md)）。側面キーの役割と色は推定です。
 
-| 外装カスタマイズ | 側面（立体表示） | 画面シミュレーター |
+| 外装カスタマイズ | 背面（傾斜のある立体表示） | 画面シミュレーター |
 |---|---|---|
 | ![](docs/images/customize-front.png) | ![](docs/images/customize-back.png) | ![](docs/images/simulator.png) |
 
@@ -26,8 +26,8 @@ python3 -m http.server 8765
 ### 外装カスタマイズ
 
 - 本体カラー 3 色と背面カバー 10 種類の組み合わせを切り替え
-- 厚み 12 mm の立体表示。ドラッグで回転、前面・背面・左右の側面・上面の切り替え
-- 側面の電源キー、イヤホンジャック、サイドキー、キルスイッチ、Signal LED を実寸の位置に表示
+- 厚み 12 mm の立体表示（背面の傾斜も計測値どおり）。ドラッグで回転、前面・背面・左右の側面・上面の切り替え
+- 側面の電源キー、イヤホンジャック、サイドキー、キルスイッチ、Signal LED、USB-C を実寸の位置に表示
 - キーボード配列（QWERTY / AZERTY / QWERTZ）の切り替え
 - 汎用アクセサリーのモック（ミニマルケース、Qi2 リングスタンド）
 - 構成を URL に保存して共有（例: `#body=clover&cover=bloom&ring=1&view=left`。view は front / back / left / right / top）

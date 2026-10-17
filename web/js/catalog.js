@@ -19,11 +19,11 @@
   const bottomRow = [
     { label: "123", value: "Sym", cls: "mod round small", cx: 9.74 },
     { label: "ctrl", sub: "0", value: "Ctrl", cls: "mod round small", cx: 17.15 },
-    { label: "⌕", value: "Apps", cls: "mod round", cx: 24.56, title: "アプリ検索" },
+    { label: "", value: "Apps", cls: "mod round apps", cx: 24.56, title: "アプリ検索" },
     { label: "", value: " ", cls: "space", cx: 39.4, w: 20.8, title: "スペース（指紋センサー）" },
-    { label: "◆", value: "ClicksKey", cls: "clicks round", cx: 54.1, title: "Clicks Key" },
-    { label: "alt", sub: "☺", value: "Alt", cls: "mod round small", cx: 61.5 },
-    { label: "123", value: "Sym", cls: "mod round small", cx: 68.9 },
+    { label: "", value: "ClicksKey", cls: "clicks round", cx: 54.1, title: "Clicks Key" },
+    { label: "☺", value: "Emoji", cls: "mod round", cx: 61.5, title: "絵文字" },
+    { label: "alt", value: "Alt", cls: "mod round small", cx: 68.9 },
   ];
 
   window.CommunicatorCatalog = {

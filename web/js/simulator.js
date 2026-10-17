@@ -347,6 +347,7 @@
       return render();
     }
     if (value === "Apps") return go("hub");
+    if (value === "Emoji") return insertText("😊");
     if (value === "Ctrl") return;
 
     if (state.screen === "lock") {

@@ -148,7 +148,6 @@ footer {
   width: calc(78.63 * var(--mm));
   height: calc(130.5 * var(--mm));
   transform-style: preserve-3d;
-  transition: transform .7s cubic-bezier(.2, .7, .2, 1);
 }
 
 .face {
@@ -203,14 +202,12 @@ footer {
   left: 0;
   top: 0;
   transform-origin: 0 0;
-  backface-visibility: hidden;
-  -webkit-backface-visibility: hidden;
   background:
+    linear-gradient(var(--tint, transparent), var(--tint, transparent)),
     radial-gradient(circle, rgba(0, 0, 0, .3) calc(.35 * var(--mm)), transparent calc(.45 * var(--mm))) 0 0 / calc(2.2 * var(--mm)) calc(2.2 * var(--mm)),
     var(--cover);
-  filter: brightness(var(--shade, 1));
 }
-.device.with-case .chamfer { background: #161618; }
+.device.with-case .chamfer { background: linear-gradient(var(--tint, transparent), var(--tint, transparent)), #161618; }
 .device.solid .camera { transform: translateZ(calc(.7 * var(--mm))); backface-visibility: hidden; }
 .camera-layer {
   position: absolute;
@@ -230,11 +227,10 @@ footer {
 .device.solid .front > .jack,
 .device.solid .front > .led { display: none; }
 
+/* 裏向きの .side と .chamfer は device.js の cull() で隠します */
 .side {
   position: absolute;
-  backface-visibility: hidden;
-  -webkit-backface-visibility: hidden;
-  background: var(--body);
+  background: linear-gradient(var(--tint, transparent), var(--tint, transparent)), var(--body);
 }
 /* 陰影と、前面の縁に見えるガラスの黒い線（帯の下端が前面側） */
 .side::before {
@@ -246,10 +242,11 @@ footer {
     linear-gradient(180deg, transparent 0 calc(100% - .6 * var(--mm)), rgba(0, 0, 0, .55) calc(100% - .6 * var(--mm))),
     linear-gradient(180deg, rgba(0, 0, 0, .2), transparent 25%, transparent 75%, rgba(255, 255, 255, .14));
 }
-.side-corner { filter: brightness(.92); }
-.side-left, .side-right { filter: brightness(.96); }
-.side-bottom { filter: brightness(.85); }
-.device.with-case .side { background: #161618; }
+/* 面ごとの明るさ。filter は 3D の要素で使うと Chrome の描画が崩れるため、半透明の色を重ねます */
+.side-corner { --tint: rgba(0, 0, 0, .08); }
+.side-left, .side-right { --tint: rgba(0, 0, 0, .04); }
+.side-bottom { --tint: rgba(0, 0, 0, .15); }
+.device.with-case .side { background: linear-gradient(var(--tint, transparent), var(--tint, transparent)), #161618; }
 .device.solid.with-case .face { outline: none; }
 .device.with-case .side-part { opacity: .55; }
 

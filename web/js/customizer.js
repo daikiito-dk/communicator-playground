@@ -51,9 +51,28 @@
     return a >= 135 && a <= 225 ? "back" : "front";
   }
 
+  // 表示中の角度。回転のアニメーションは、裏向きの面を毎フレーム隠せるよう requestAnimationFrame で動かします。
+  const shown = { angle, tilt };
+  let frame = 0;
+
   function rotate(animate = true) {
-    device.root.style.transition = animate ? "" : "none";
-    device.root.style.transform = `rotateX(${tilt}deg) rotateY(${angle}deg)`;
+    cancelAnimationFrame(frame);
+    if (!animate) {
+      Object.assign(shown, { angle, tilt });
+      device.setRotation(tilt, angle);
+      return;
+    }
+    const from = { ...shown };
+    const start = performance.now();
+    const step = (time) => {
+      const k = Math.min(1, (time - start) / 700);
+      const e = 1 - Math.pow(1 - k, 3);
+      shown.angle = from.angle + (angle - from.angle) * e;
+      shown.tilt = from.tilt + (tilt - from.tilt) * e;
+      device.setRotation(shown.tilt, shown.angle);
+      if (k < 1) frame = requestAnimationFrame(step);
+    };
+    frame = requestAnimationFrame(step);
   }
 
   function showFace(face) {
@@ -132,6 +151,8 @@
     let start = null;
     stage.addEventListener("pointerdown", (e) => {
       if (e.button !== 0) return;
+      cancelAnimationFrame(frame);
+      ({ angle, tilt } = shown);
       start = { x: e.clientX, y: e.clientY, angle, tilt };
       stage.setPointerCapture(e.pointerId);
       stage.classList.add("dragging");
@@ -195,7 +216,7 @@
 
     setupDrag();
     render();
-    rotate();
+    rotate(false);
   }
 
   window.Customizer = {

@@ -107,24 +107,11 @@
     return { pts, rr };
   }
 
-  // 計測点の間を step mm ごとに直線補間します。
-  function smoothProfile(step) {
-    const out = [];
-    const last = BACK_PROFILE[BACK_PROFILE.length - 1];
-    for (let d = 0; d < last.d; d += step) {
-      const i = BACK_PROFILE.findIndex((p) => p.d > d) - 1;
-      const a = BACK_PROFILE[i];
-      const b = BACK_PROFILE[i + 1];
-      out.push({ d, t: a.t + ((b.t - a.t) * (d - a.d)) / (b.d - a.d) });
-    }
-    out.push(last);
-    return out;
-  }
-
   // 平らな四角形（P0→P1→P2→P3）を、matrix3d と clip-path で 1 枚の要素として描きます。
+  // 計測点の間は直線なので、面は計測点ごとに 1 段だけ作ります（3D の要素が多いと Chrome の描画が崩れるため）。
   function backPanels(root) {
     const panels = [];
-    const rings = smoothProfile(1.5).map((p) => ring(p.d, BODY.t / 2 - p.t).pts);
+    const rings = BACK_PROFILE.map((p) => ring(p.d, BODY.t / 2 - p.t).pts);
     for (let b = 0; b < rings.length - 1; b++) {
       const outer = rings[b];
       const inner = rings[b + 1];
@@ -133,7 +120,10 @@
         const quad = [outer[i], outer[j], inner[j], inner[i]];
         if (Math.hypot(...sub3(quad[1], quad[0])) < 1e-3) continue;
         const node = el("div", "chamfer", root);
-        panels.push({ node, quad });
+        let n = normalize(cross3(sub3(quad[1], quad[0]), sub3(quad[3], quad[0])));
+        const mid = quad.reduce((a, p) => [a[0] + p[0] / 4, a[1] + p[1] / 4, a[2] + p[2] / 4], [0, 0, 0]);
+        if (dot3(n, [mid[0], mid[1], -40]) < 0) n = n.map((c) => -c);
+        panels.push({ node, quad, n, mid });
       }
     }
     return panels;
@@ -141,12 +131,9 @@
 
   function layoutPanels(panels, mm) {
     const { w, h } = BODY;
-    for (const { node, quad } of panels) {
-      const [p0, p1, , p3] = quad;
+    for (const { node, quad, n } of panels) {
+      const [p0, p1] = quad;
       const e1 = normalize(sub3(p1, p0));
-      let n = normalize(cross3(sub3(p1, p0), sub3(p3, p0)));
-      const mid = quad.reduce((a, p) => [a[0] + p[0] / 4, a[1] + p[1] / 4, a[2] + p[2] / 4], [0, 0, 0]);
-      if (dot3(n, [mid[0], mid[1], -40]) < 0) n = n.map((c) => -c);
       const e2 = cross3(n, e1);
 
       // 隣の面との継ぎ目が透けないよう、重心から少しだけ広げます。
@@ -160,7 +147,7 @@
         const du = u - cu;
         const dv = v - cv;
         const l = Math.hypot(du, dv) || 1;
-        return [u + (du / l) * 0.08, v + (dv / l) * 0.08];
+        return [u + (du / l) * 0.12, v + (dv / l) * 0.12];
       });
       const minU = Math.min(...grown.map((q) => q[0]));
       const minV = Math.min(...grown.map((q) => q[1]));
@@ -177,11 +164,39 @@
         .map(([u, v]) => `${((u - minU) * mm).toFixed(2)}px ${((v - minV) * mm).toFixed(2)}px`)
         .join(", ")})`;
       node.style.transform = `matrix3d(${[...e1, 0, ...e2, 0, ...n, 0, ...o, 1].map((c) => +c.toFixed(5)).join(",")})`;
-      node.style.setProperty("--shade", (0.78 + 0.3 * Math.max(0, dot3(n, LIGHT))).toFixed(3));
+      node.style.setProperty("--tint", tint(0.78 + 0.3 * Math.max(0, dot3(n, LIGHT))));
     }
   }
 
-  function buildSides(root) {
+  // 明るさ（1 が元の色）を、上に重ねる半透明の色に置き換えます。
+  // filter: brightness() は要素ごとに描画面が増え、3D の要素が多いと Chrome の描画が崩れるため使いません。
+  function tint(shade) {
+    return shade < 1 ? `rgba(0, 0, 0, ${(1 - shade).toFixed(3)})` : `rgba(255, 255, 255, ${((shade - 1) * 0.6).toFixed(3)})`;
+  }
+
+  // 向きから見て裏側を向いている面は、backface-visibility に頼らず JavaScript で隠します。
+  // Safari では子要素を持つ面の backface-visibility が効かず、Chrome では隠れた面も描画の負担になるためです。
+  // rx, ry は CSS の rotateX / rotateY の角度、eye は本体中心から視点までの距離（mm）です。
+  function cull(faces, rx, ry, eye) {
+    const [sx, cx] = [Math.sin((rx * Math.PI) / 180), Math.cos((rx * Math.PI) / 180)];
+    const [sy, cy] = [Math.sin((ry * Math.PI) / 180), Math.cos((ry * Math.PI) / 180)];
+    const rot = ([x, y, z]) => {
+      const x1 = x * cy + z * sy;
+      const z1 = -x * sy + z * cy;
+      return [x1, y * cx - z1 * sx, y * sx + z1 * cx];
+    };
+    for (const f of faces) {
+      const n = rot(f.n);
+      const c = rot(f.c);
+      const visible = n[0] * -c[0] + n[1] * -c[1] + n[2] * (eye - c[2]) > 0;
+      if (f.visible !== visible) {
+        f.visible = visible;
+        f.node.style.visibility = visible ? "" : "hidden";
+      }
+    }
+  }
+
+  function buildSides(root, faces) {
     const { w, h, r } = BODY;
     const straights = {
       top: { x: 0, y: -h / 2, deg: -90, len: w - 2 * r },
@@ -191,6 +206,7 @@
     };
     for (const [name, s] of Object.entries(straights)) {
       const strip = sideStrip(root, "side-" + name, s.x, s.y, s.deg, s.len);
+      faces.push(stripFace(strip, s.x, s.y, s.deg));
       for (const part of SIDE_PARTS[name]) {
         // 帯の x 方向は、上面では左→右、右側面では上→下、下面では右→左、左側面では下→上を向きます。
         const a = name === "left" ? h - r - part.to : name === "bottom" ? w - r - part.to : part.from - r;
@@ -214,18 +230,27 @@
       for (let k = 0; k < CORNER_SEGMENTS; k++) {
         const deg = c.start + (k + 0.5) * step;
         const rad = (deg * Math.PI) / 180;
-        sideStrip(root, "side-corner", c.cx + apothem * Math.cos(rad), c.cy + apothem * Math.sin(rad), deg, segW);
+        const x = c.cx + apothem * Math.cos(rad);
+        const y = c.cy + apothem * Math.sin(rad);
+        faces.push(stripFace(sideStrip(root, "side-corner", x, y, deg, segW), x, y, deg));
       }
     }
+  }
+
+  function stripFace(node, x, y, deg) {
+    const rad = (deg * Math.PI) / 180;
+    return { node, n: [Math.cos(rad), Math.sin(rad), 0], c: [x, y, BODY.t / 2 - BODY.wall / 2] };
   }
 
   function create(container, options = {}) {
     const root = el("div", "device", container);
     let panels = [];
+    const faces = [];
     if (options.solid) {
       root.classList.add("solid");
-      buildSides(root);
+      buildSides(root, faces);
       panels = backPanels(root);
+      for (const p of panels) faces.push({ node: p.node, n: p.n, c: p.mid });
     }
 
     const front = el("div", "face front", root);
@@ -255,6 +280,10 @@
     I18n.title(killSwitch, "dev.kill");
 
     const back = el("div", "face back", root);
+    if (options.solid) {
+      faces.push({ node: front, n: [0, 0, 1], c: [0, 0, BODY.t / 2] });
+      faces.push({ node: back, n: [0, 0, -1], c: [0, 0, -BODY.t / 2] });
+    }
     el("div", "plateau", back);
     // 立体表示では、カメラ部を背面から盛り上がった塊として、薄い板を重ねて厚みを出します。
     if (options.solid) {
@@ -270,6 +299,7 @@
     el("div", "back-mark", back).textContent = "COMMUNITY MOCK";
 
     let mm = 4;
+    let rotation = { rx: 0, ry: 0 };
     let logical = { w: 411, h: 457 };
     let keyHandler = null;
     let killHandler = null;
@@ -364,6 +394,14 @@
         }
       },
 
+      // 立体表示の向きを変えます（CSS の transition は使わず、呼び出し側が毎フレーム呼びます）。
+      setRotation(rx, ry) {
+        rotation = { rx, ry };
+        root.style.transform = `rotateX(${rx}deg) rotateY(${ry}deg)`;
+        const perspective = parseFloat(getComputedStyle(container).perspective) || 1800;
+        cull(faces, rx, ry, perspective / mm);
+      },
+
       setLogicalSize(w, h) {
         logical = { w, h };
         applyScale();
@@ -377,6 +415,7 @@
         root.style.setProperty("--mm", mm + "px");
         applyScale();
         layoutPanels(panels, mm);
+        if (faces.length) api.setRotation(rotation.rx, rotation.ry);
       },
     };
 

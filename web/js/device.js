@@ -24,6 +24,28 @@
     spaceH: 5.0,
   };
 
+  // 本体の外形（mm）。厚みは公開値の 12 mm、角の半径は正面図からの計測値。
+  const BODY = { w: 78.63, h: 130.5, t: 12, r: 8.5 };
+  const CORNER_SEGMENTS = 6;
+
+  // 側面の部品（mm）。pos は上面なら本体左端から、左右の側面なら本体上端からの距離。
+  const SIDE_PARTS = {
+    top: [
+      { cls: "s-key", from: 52.9, to: 65.5, title: "電源キー" },
+      { cls: "s-jack", from: 17.7, to: 21.3, title: "3.5 mm イヤホンジャック" },
+    ],
+    left: [
+      { cls: "s-switch", from: 14.6, to: 20.4, title: "キルスイッチ" },
+      { cls: "s-key", from: 26.3, to: 39.3, title: "サイドキー（上）" },
+      { cls: "s-key", from: 42.7, to: 55.7, title: "サイドキー（下）" },
+    ],
+    right: [
+      { cls: "s-led", from: 34.8, to: 52.4, title: "Signal LED" },
+      { cls: "s-key", from: 36.2, to: 51.4, title: "右側面のキー" },
+    ],
+    bottom: [],
+  };
+
   const mmCalc = (v) => `calc(${v} * var(--mm))`;
 
   function el(tag, className, parent) {
@@ -33,8 +55,63 @@
     return node;
   }
 
-  function create(container) {
+  // 厚み方向の帯（幅 width mm × 厚み BODY.t）を、本体中心から (x, y) の位置に、外向きの法線が角度 deg を向くように置きます。
+  // rotateX(90deg) で帯を前後方向に起こし、rotateZ で法線の向きを合わせます。帯の下端が前面側になります。
+  function sideStrip(parent, cls, x, y, deg, width) {
+    const strip = el("div", "side " + cls, parent);
+    strip.style.width = mmCalc(width);
+    strip.style.height = mmCalc(BODY.t);
+    strip.style.left = `calc(50% - ${width / 2} * var(--mm))`;
+    strip.style.top = `calc(50% - ${BODY.t / 2} * var(--mm))`;
+    strip.style.transform =
+      `translate3d(${mmCalc(x)}, ${mmCalc(y)}, 0) rotateZ(${deg + 90}deg) rotateX(90deg)`;
+    return strip;
+  }
+
+  function buildSides(root) {
+    const { w, h, r } = BODY;
+    const straights = {
+      top: { x: 0, y: -h / 2, deg: -90, len: w - 2 * r },
+      right: { x: w / 2, y: 0, deg: 0, len: h - 2 * r },
+      bottom: { x: 0, y: h / 2, deg: 90, len: w - 2 * r },
+      left: { x: -w / 2, y: 0, deg: 180, len: h - 2 * r },
+    };
+    for (const [name, s] of Object.entries(straights)) {
+      const strip = sideStrip(root, "side-" + name, s.x, s.y, s.deg, s.len);
+      for (const part of SIDE_PARTS[name]) {
+        // 帯の x 方向は、上面では左→右、右側面では上→下、左側面では下→上を向きます。
+        const a = name === "left" ? h - r - part.to : part.from - r;
+        const node = el("div", "side-part " + part.cls, strip);
+        node.title = part.title;
+        node.style.left = mmCalc(a);
+        node.style.width = mmCalc(part.to - part.from);
+      }
+    }
+
+    const step = 90 / CORNER_SEGMENTS;
+    const segW = 2 * r * Math.sin((step / 2) * (Math.PI / 180)) + 0.05;
+    const apothem = r * Math.cos((step / 2) * (Math.PI / 180));
+    const corners = [
+      { cx: w / 2 - r, cy: -h / 2 + r, start: -90 },
+      { cx: w / 2 - r, cy: h / 2 - r, start: 0 },
+      { cx: -w / 2 + r, cy: h / 2 - r, start: 90 },
+      { cx: -w / 2 + r, cy: -h / 2 + r, start: 180 },
+    ];
+    for (const c of corners) {
+      for (let k = 0; k < CORNER_SEGMENTS; k++) {
+        const deg = c.start + (k + 0.5) * step;
+        const rad = (deg * Math.PI) / 180;
+        sideStrip(root, "side-corner", c.cx + apothem * Math.cos(rad), c.cy + apothem * Math.sin(rad), deg, segW);
+      }
+    }
+  }
+
+  function create(container, options = {}) {
     const root = el("div", "device", container);
+    if (options.solid) {
+      root.classList.add("solid");
+      buildSides(root);
+    }
 
     const front = el("div", "face front", root);
     el("div", "glass", front);

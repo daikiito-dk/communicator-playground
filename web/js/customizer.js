@@ -8,8 +8,16 @@
   const state = { body: "smoke", cover: "dune", layout: "qwerty", case: false, ring: false };
   let device;
   let stage;
-  let angle = -18;
-  let tilt = -6;
+  // 表示の向き（rotateY / rotateX の角度）。側面が見えるよう、正面と背面も少し斜めにしています。
+  const VIEWS = {
+    front: { angle: -18, tilt: -8 },
+    back: { angle: 198, tilt: -8 },
+    left: { angle: 62, tilt: -10 },
+    right: { angle: -62, tilt: -10 },
+    top: { angle: -20, tilt: -62 },
+  };
+  let angle = VIEWS.front.angle;
+  let tilt = VIEWS.front.tilt;
   const listeners = [];
 
   function readHash() {
@@ -19,7 +27,8 @@
     if (C.layouts[p.get("kb")]) state.layout = p.get("kb");
     state.case = p.get("case") === "1";
     state.ring = p.get("ring") === "1";
-    if (p.get("view") === "back") angle = 180;
+    const view = VIEWS[p.get("view")];
+    if (view) ({ angle, tilt } = view);
   }
 
   function writeHash() {
@@ -29,8 +38,16 @@
     p.set("kb", state.layout);
     p.set("case", state.case ? "1" : "0");
     p.set("ring", state.ring ? "1" : "0");
-    p.set("view", Math.cos((angle * Math.PI) / 180) < 0 ? "back" : "front");
+    p.set("view", currentView());
     history.replaceState(null, "", "#" + p.toString());
+  }
+
+  function currentView() {
+    if (tilt < -40) return "top";
+    const a = ((angle % 360) + 360) % 360;
+    if (a > 45 && a < 135) return "left";
+    if (a > 225 && a < 315) return "right";
+    return a >= 135 && a <= 225 ? "back" : "front";
   }
 
   function rotate(animate = true) {
@@ -39,8 +56,11 @@
   }
 
   function showFace(face) {
-    angle = face === "back" ? 180 : 0;
-    tilt = -6;
+    const view = VIEWS[face] || VIEWS.front;
+    // 今の向きから近い回り方で回るよう、360 度の倍数をそろえます。
+    const turns = Math.round((angle - view.angle) / 360);
+    angle = view.angle + turns * 360;
+    tilt = view.tilt;
     rotate();
     writeHash();
   }
@@ -118,7 +138,7 @@
     stage.addEventListener("pointermove", (e) => {
       if (!start) return;
       angle = start.angle + (e.clientX - start.x) * 0.6;
-      tilt = Math.max(-35, Math.min(35, start.tilt - (e.clientY - start.y) * 0.3));
+      tilt = Math.max(-80, Math.min(80, start.tilt - (e.clientY - start.y) * 0.3));
       rotate(false);
     });
     const end = () => {
@@ -132,7 +152,7 @@
 
   function init() {
     stage = $("customize-stage");
-    device = window.CommunicatorDevice.create(stage);
+    device = window.CommunicatorDevice.create(stage, { solid: true });
     readHash();
 
     swatchButtons($("body-swatches"), C.bodies, (b) => b.swatch, (id) => update({ body: id }, "front"));
@@ -155,6 +175,9 @@
 
     $("view-front").addEventListener("click", () => showFace("front"));
     $("view-back").addEventListener("click", () => showFace("back"));
+    for (const face of ["left", "right", "top"]) {
+      $("view-" + face).addEventListener("click", () => showFace(face));
+    }
     $("view-spin").addEventListener("click", () => {
       angle += 360;
       rotate();

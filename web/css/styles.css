@@ -167,6 +167,81 @@ footer {
 }
 .device.front-only .back { display: none; }
 
+/* ---- 立体表示（外装カスタマイズ）: 厚み 12 mm ---- */
+.device.solid .front { transform: translateZ(calc(6 * var(--mm))); box-shadow: inset 0 0 0 calc(.35 * var(--mm)) rgba(255, 255, 255, .14); }
+.device.solid .back { transform: rotateY(180deg) translateZ(calc(6 * var(--mm))); box-shadow: inset 0 0 calc(6 * var(--mm)) rgba(0, 0, 0, .25); }
+/* 前面に描いていた側面部品は、立体表示では側面の帯に置き直します */
+.device.solid .front > .side-key,
+.device.solid .front > .side-switch,
+.device.solid .front > .jack,
+.device.solid .front > .led { display: none; }
+
+.side {
+  position: absolute;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  background: var(--cover);
+}
+/* 帯の上（背面側）約 4 mm がカバー、残りが本体フレーム */
+.side::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 35%;
+  bottom: 0;
+  background: var(--body);
+}
+/* 陰影と、前面の縁に見えるガラスの黒い線 */
+.side::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background:
+    linear-gradient(180deg, transparent 0 calc(100% - .6 * var(--mm)), rgba(0, 0, 0, .55) calc(100% - .6 * var(--mm))),
+    linear-gradient(180deg, rgba(0, 0, 0, .18), transparent 20%, transparent 80%, rgba(255, 255, 255, .12)),
+    linear-gradient(180deg, transparent 0 34%, rgba(0, 0, 0, .25) 34% 35%, transparent 35%);
+}
+.side-corner { filter: brightness(.92); }
+.side-left, .side-right { filter: brightness(.96); }
+.side-bottom { filter: brightness(.85); }
+.device.with-case .side { background: #161618; }
+.device.with-case .side::after { display: none; }
+.device.with-case .side-part { opacity: .55; }
+
+.side-part {
+  position: absolute;
+  z-index: 2;
+  top: 66%;
+  height: calc(2.6 * var(--mm));
+  transform: translateY(-50%);
+  border-radius: calc(1.3 * var(--mm));
+}
+.s-key {
+  background: linear-gradient(180deg, #e8eaed, #a9adb3);
+  box-shadow: 0 0 0 calc(.15 * var(--mm)) rgba(0, 0, 0, .25);
+}
+.s-switch {
+  height: calc(2 * var(--mm));
+  background: linear-gradient(90deg, #d8dadd 0 50%, #c0283a 50%);
+  box-shadow: inset 0 0 0 calc(.15 * var(--mm)) rgba(0, 0, 0, .3);
+}
+.s-jack {
+  height: calc(3.6 * var(--mm));
+  border-radius: 50%;
+  background: radial-gradient(circle, #050505 0 45%, #2b2b2d 55%, #6c6e72 70%, transparent 72%);
+}
+.s-led {
+  height: calc(4 * var(--mm));
+  border-radius: calc(2 * var(--mm));
+  background: rgba(0, 0, 0, .18);
+}
+.device.led-demo .s-led {
+  background: #ff4d5e;
+  box-shadow: 0 0 calc(2 * var(--mm)) #ff4d5e;
+}
+
 .device.with-case .face {
   outline: calc(1.6 * var(--mm)) solid rgba(22, 22, 24, .94);
   outline-offset: calc(.2 * var(--mm));

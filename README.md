@@ -1,13 +1,115 @@
+# Communicator Playground (unofficial community edition)
+
+[English](#english) | [日本語](#日本語)
+
+| Customizer | Back (sloped 3D view) | Screen simulator |
+|---|---|---|
+| ![](docs/images/customize-front.png) | ![](docs/images/customize-back.png) | ![](docs/images/simulator.png) |
+
+<a id="english"></a>
+
+A web page for trying on Clicks Communicator exteriors and testing app behavior inside a mock screen, plus notes for developers.
+
+> An unofficial community project, not affiliated with Clicks Technology.
+> Dimensions come from the published specs (130.5 × 78.63 × 12 mm, 4.03-inch 1080 × 1200) and measurements of official product images ([measurements and sources](docs/measurements.md), in Japanese). Side-key functions and colors are estimates.
+
+More background (device specs, FAQ summary, how the mock is built) is in the [Wiki](https://github.com/daikiito-dk/communicator-playground/wiki).
+
+## Try it
+
+**Live page: https://daikiito-dk.github.io/communicator-playground/**
+
+No build step is needed to run it locally. Any static file server works.
+
+```bash
+cd web
+python3 -m http.server 8765
+# open http://localhost:8765
+```
+
+## Features
+
+The UI is available in English, Japanese, French and Spanish. Switch from the menu at the top right, or open the page with `#lang=en` (`ja` / `fr` / `es`). Without that, the page uses your last choice, then your browser language. Messages and dates inside the simulator follow the selected language.
+
+### Customizer
+
+- Combine the 3 body colors with the 10 back covers on sale (Cognac, Surf, Miami Beach, Dune, Spice, Clover, Vino, Onyx, Surge, Bloom)
+- 12 mm thick 3D view with the measured back slope, raised display and keys, and a screen reflection that follows the rotation. Drag to rotate, or jump to front / back / left / right / top
+- Power key, headphone jack, side keys, kill switch, Signal LED and USB-C at their measured positions
+- Keyboard layouts: QWERTY, AZERTY, QWERTZ
+- Save and share a configuration in the URL (for example `#body=clover&cover=bloom&view=left`; view is front / back / left / right / top)
+
+### Screen simulator
+
+- Mock OS: lock screen, Message hub, chats and notes. The lock screen follows the official product image (clock, date, next event and per-app notifications) and also appears in the customizer
+- Use the on-screen keys or your computer keyboard (J / K, Enter, Esc and so on)
+- Sending a notification blinks the Signal LED in the contact's color
+- alt / 123 types the symbol or number printed above a key; the kill switch on the left turns the mic off
+- Change the Clicks Key action; hold the side key to simulate voice input
+- Scroll with the mouse wheel over the keyboard (the keyboard is touch-sensitive)
+- Switch screen density and font size to check layouts in dp
+- Load any URL (such as a local dev server) inside the mock screen
+
+## Layout
+
+```
+web/                  Web page (plain HTML / CSS / JS, no build)
+  js/i18n.js          UI strings and language switching (EN / JA / FR / ES)
+  js/catalog.js       Body colors, covers, keyboard layouts, accessories
+  js/device.js        Device mock drawing (shared by both tabs)
+  js/lockscreen.js    Start (lock) screen (shared by both tabs)
+  js/customizer.js    Customizer
+  js/simulator.js     Screen simulator
+avd/                  Android Studio hardware profile and AVD script
+tools/                Emulator skin generator
+docs/                 Keyboard-first checklist, Japanese input guide, measurements
+```
+
+## Roadmap
+
+| Stage | What | Already in place |
+|---|---|---|
+| Accuracy | Update dimensions, camera position and colors from a real device; move to real 3D (glTF) and AR | Dimensions are mm constants in one place |
+| Accessory sales / ordering | Add SKUs, prices and stock to the catalog and connect to a store cart (Shopify, etc.) or a quote request | Product data lives in `catalog.js`; configurations travel in the URL; a disabled "Order" button is in place |
+| Enterprise desktop app | Wrap the same web code in Electron or Tauri as an offline simulator | No external libraries or build steps, so it can be wrapped as is |
+
+Before selling or distributing anything, get permission from Clicks for its name, logo and product images. The same applies to third-party accessories such as dbrand.
+
+## Contributing
+
+Reports from people with a real device are especially welcome. Use the [issue templates](https://github.com/daikiito-dk/communicator-playground/issues/new/choose).
+
+- **Device measurements and screen info:** screen density (`adb shell wm density`), camera and key positions, etc.
+- **Japanese input results:** how each IME works ([Japanese input guide](docs/japanese-input-guide.md))
+- **Bugs and ideas:** for the web page or scripts
+
+Please do not post confidential pre-release information (anything under NDA) or copies of official Clicks images.
+
+Pushing to `main` publishes `web/` to GitHub Pages automatically (`.github/workflows/pages.yml`).
+
+## License
+
+[MIT](LICENSE). Clicks and Communicator names and trademarks belong to Clicks Technology.
+
+## Known limitations
+
+- Screen, keys, punch hole, speakers and side keys are measured from product images (about ±0.5–1 mm). Side-key functions, colors and finishes are estimates.
+- Sites that block embedding (`X-Frame-Options`, etc.) cannot be shown in the simulator.
+- Japanese conversion input is not reproduced in the mock OS (keys typed while your computer's IME is composing are ignored).
+- Korean and Arabic keyboard layouts, which Clicks also offers, are not in the mock yet.
+
+---
+
+<a id="日本語"></a>
+
 # Communicator Playground（非公式コミュニティ版）
 
 Clicks Communicator の外装を着せ替えて見たり、モック画面の中でアプリの動きを試したりできる Web ページと、開発者向けの資料をまとめたものです。
 
 > 非公式のコミュニティ制作物です。Clicks Technology とは関係ありません。
-> 寸法は公開値（130.5 × 78.63 mm、4.03 インチ 1080 × 1200）と、公式の製品画像からの計測値です（[計測値と出典](docs/measurements.md)）。側面キーの役割と色は推定です。
+> 寸法は公開値（130.5 × 78.63 × 12 mm、4.03 インチ 1080 × 1200）と、公式の製品画像からの計測値です（[計測値と出典](docs/measurements.md)）。側面キーの役割と色は推定です。
 
-| 外装カスタマイズ | 背面（傾斜のある立体表示） | 画面シミュレーター |
-|---|---|---|
-| ![](docs/images/customize-front.png) | ![](docs/images/customize-back.png) | ![](docs/images/simulator.png) |
+端末の仕様、FAQ の要点、モックの作り方などは [Wiki](https://github.com/daikiito-dk/communicator-playground/wiki) にまとめています。
 
 ## すぐに試す
 
@@ -28,11 +130,10 @@ python3 -m http.server 8765
 ### 外装カスタマイズ
 
 - 本体カラー 3 色と、販売中の背面カバー 10 色（Cognac、Surf、Miami Beach、Dune、Spice、Clover、Vino、Onyx、Surge、Bloom）の組み合わせを切り替え
-- 厚み 12 mm の立体表示（背面の傾斜も計測値どおり）。ドラッグで回転、前面・背面・左右の側面・上面の切り替え
+- 厚み 12 mm の立体表示。背面の傾斜は計測値どおりで、ディスプレイとキーの盛り上がり、回転に合わせて動く画面の映り込みも表現。ドラッグで回転、前面・背面・左右の側面・上面の切り替え
 - 側面の電源キー、イヤホンジャック、サイドキー、キルスイッチ、Signal LED、USB-C を実寸の位置に表示
 - キーボード配列（QWERTY / AZERTY / QWERTZ）の切り替え
-- 汎用アクセサリーのモック（ミニマルケース、Qi2 リングスタンド）
-- 構成を URL に保存して共有（例: `#body=clover&cover=bloom&ring=1&view=left`。view は front / back / left / right / top）
+- 構成を URL に保存して共有（例: `#body=clover&cover=bloom&view=left`。view は front / back / left / right / top）
 
 ### 画面シミュレーター
 
@@ -57,7 +158,7 @@ web/                  Web ページ（ビルド不要の HTML / CSS / JS）
   js/simulator.js     画面シミュレーター
 avd/                  Android Studio 用のハードウェアプロファイルと AVD 作成スクリプト
 tools/                エミュレーター用スキンの生成スクリプト
-docs/                 キーボード優先の開発チェックリスト、日本語入力ガイド
+docs/                 キーボード優先の開発チェックリスト、日本語入力ガイド、計測値
 ```
 
 ## 今後の拡張
@@ -91,3 +192,4 @@ docs/                 キーボード優先の開発チェックリスト、日�
 - 画面、キー、パンチホール、スピーカー、側面キーの位置は製品画像からの計測値です（誤差 ±0.5〜1 mm 程度）。側面キーの役割、色、質感は推定です。
 - 埋め込みを禁止しているサイト（`X-Frame-Options` など）はシミュレーターに表示できません。
 - 日本語の変換入力はモック OS では再現していません（PC 側で変換中のキー入力は無視します）。
+- Clicks が提供している韓国語とアラビア語のキーボード配列は、モックにはまだありません。

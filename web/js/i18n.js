@@ -80,7 +80,7 @@
       "tip.chat": "Chat: type and press Enter to send, Esc to go back",
       "tip.scroll": "Use the mouse wheel over the keyboard to scroll (touch keyboard)",
       "tip.mods": "⇧ capitalizes the next letter; alt / 123 types the symbol or number printed above",
-      "tip.kill": "Click the red kill switch on the left side to turn the mic off",
+      "tip.kill": "Click the red kill switch on the left side to toggle the mic off,
       "tip.voice": "Holding the upper key on the left side also starts voice input",
 
       "os.unlock": "Press Space (fingerprint sensor) to unlock",

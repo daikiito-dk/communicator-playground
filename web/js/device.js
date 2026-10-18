@@ -30,17 +30,22 @@
   const BODY = { w: 78.63, h: 130.5, t: 12, r: 8.5, wall: 7.7 };
   const CORNER_SEGMENTS = 6;
   // 背面の断面（上・左・右の縁からの距離 d と、前面からの厚み t、mm）。背面写真と上面写真からの計測値。
-  // 縁から RIM までは本体色のフレームの面で、その内側から背面カバーがほぼ平らな斜面で立ち上がります。
-  const RIM = 1.5;
+  // 縁から RIM までは本体色のフレームの面で、その内側から背面カバーが丸みを帯びて立ち上がり、SLOPE_END で平らになります。
+  // 計測点（d 5 → 10.6、d 7 → 11.5）は sin 曲線とほぼ一致するため、曲線を SLOPE_STEPS 段に分けて面を作ります。
+  const RIM = 2.2;
+  const SLOPE_END = 8.5;
+  const SLOPE_STEPS = 5;
   const BACK_PROFILE = [
     { d: 0, t: 7.7 },
-    { d: RIM, t: 7.7 },
-    { d: 5, t: 10.6 },
-    { d: 7, t: 11.5 },
-    { d: 8.5, t: 11.9 },
+    ...Array.from({ length: SLOPE_STEPS + 1 }, (_, k) => {
+      const s = k / SLOPE_STEPS;
+      return { d: RIM + (SLOPE_END - RIM) * s, t: 7.7 + 4.2 * Math.sin((s * Math.PI) / 2) };
+    }),
   ];
-  // 下端側の斜面は上・左・右の約 3.5 倍の幅（縁から約 26 mm）で、ゆるやかに下がります（背面写真の陰影から計測）。
-  const BOTTOM_STRETCH = 3.5;
+  // 背面の斜面の角は、面の数を抑えるため側面より粗く分割します（3D の要素が多いと Chrome の描画が崩れるため）。
+  const PANEL_CORNER_SEGMENTS = 4;
+  // 下端側の斜面は上・左・右の約 4 倍の幅（縁から約 29.5 mm、ロゴのすぐ下）で、ゆるやかに下がります（背面写真の陰影から計測）。
+  const BOTTOM_STRETCH = 4;
   const bottomInset = (d) => (d <= RIM ? d : RIM + (d - RIM) * BOTTOM_STRETCH);
   const LIGHT = normalize([-0.35, -0.55, -0.75]);
   // 画面のガラスに映り込む光源（見る人から見て左上の手前。回転しても動かない）。
@@ -98,7 +103,7 @@
 
   // 上・左・右の縁から d mm（下端は bottomInset(d) mm）内側の角丸長方形の輪郭（本体中心が原点、z は前面方向が正）。
   // どの輪郭も同じ角度で点を取るので、隣り合う輪郭の間はほぼ平らな台形になります。
-  function ring(d, z) {
+  function ring(d, z, segments = CORNER_SEGMENTS) {
     const { w, h, r } = BODY;
     const rr = Math.max(2, r - d * 0.3);
     const ix = w / 2 - d - rr;
@@ -107,8 +112,8 @@
     const corners = [[ix, top, -90], [ix, bottom, 0], [-ix, bottom, 90], [-ix, top, 180]];
     const pts = [];
     for (const [cx, cy, start] of corners) {
-      for (let k = 0; k <= CORNER_SEGMENTS; k++) {
-        const a = ((start + (k * 90) / CORNER_SEGMENTS) * Math.PI) / 180;
+      for (let k = 0; k <= segments; k++) {
+        const a = ((start + (k * 90) / segments) * Math.PI) / 180;
         pts.push([cx + rr * Math.cos(a), cy + rr * Math.sin(a), z]);
       }
     }
@@ -116,10 +121,9 @@
   }
 
   // 平らな四角形（P0→P1→P2→P3）を、matrix3d と clip-path で 1 枚の要素として描きます。
-  // 計測点の間は直線なので、面は計測点ごとに 1 段だけ作ります（3D の要素が多いと Chrome の描画が崩れるため）。
   function backPanels(root) {
     const panels = [];
-    const rings = BACK_PROFILE.map((p) => ring(p.d, BODY.t / 2 - p.t).pts);
+    const rings = BACK_PROFILE.map((p) => ring(p.d, BODY.t / 2 - p.t, PANEL_CORNER_SEGMENTS).pts);
     for (let b = 0; b < rings.length - 1; b++) {
       const outer = rings[b];
       const inner = rings[b + 1];
@@ -173,7 +177,7 @@
         .map(([u, v]) => `${((u - minU) * mm).toFixed(2)}px ${((v - minV) * mm).toFixed(2)}px`)
         .join(", ")})`;
       node.style.transform = `matrix3d(${[...e1, 0, ...e2, 0, ...n, 0, ...o, 1].map((c) => +c.toFixed(5)).join(",")})`;
-      node.style.setProperty("--tint", tint(0.78 + 0.3 * Math.max(0, dot3(n, LIGHT))));
+      node.style.setProperty("--tint", tint(0.86 + 0.2 * Math.max(0, dot3(n, LIGHT))));
     }
   }
 
@@ -319,7 +323,7 @@
     }
     // 立体表示では、カメラ部を背面から盛り上がった塊として、薄い板を重ねて厚みを出します。
     if (options.solid) {
-      for (let k = 1; k <= 8; k++) {
+      for (let k = 1; k <= 11; k++) {
         const layer = el("div", "camera-layer", back);
         layer.style.setProperty("--k", k);
       }
@@ -356,6 +360,7 @@
       setBody(id) {
         const body = C.bodies.find((b) => b.id === id) || C.bodies[0];
         root.style.setProperty("--body", body.color);
+        root.style.setProperty("--body-solid", body.swatch);
         root.style.setProperty("--key-bg", body.keyBg);
         root.style.setProperty("--key-fg", body.keyFg);
         root.dataset.body = body.id;

@@ -19,6 +19,10 @@
       "tab.customize": "Customize",
       "tab.simulate": "Screen simulator",
       "footer": "An unofficial community project, not affiliated with Clicks Technology. Dimensions come from published specs (130.5 × 78.63 mm, 4.03-inch 1080 × 1200) and measurements of official product images. Side-key functions and colors are estimates.",
+      "link.official": "Official Clicks Communicator site ↗",
+      "link.github": "Source code on GitHub",
+      "link.linkedin": "Author's LinkedIn",
+      "link.medium": "Author's Medium",
 
       "stage.drag": "Drag to rotate",
       "h.view": "View",
@@ -141,6 +145,10 @@
       "tab.customize": "外装カスタマイズ",
       "tab.simulate": "画面シミュレーター",
       "footer": "非公式のコミュニティ制作物です。Clicks Technology とは関係ありません。寸法は公開値（130.5 × 78.63 mm、4.03 インチ 1080 × 1200）と公式の製品画像からの計測値です。側面キーの役割と色は推定です。",
+      "link.official": "Clicks Communicator 公式サイト ↗",
+      "link.github": "GitHub のソースコード",
+      "link.linkedin": "作者の LinkedIn",
+      "link.medium": "作者の Medium",
 
       "stage.drag": "ドラッグで回転できます",
       "h.view": "表示",
@@ -263,6 +271,10 @@
       "tab.customize": "Personnaliser",
       "tab.simulate": "Simulateur d'écran",
       "footer": "Projet communautaire non officiel, sans lien avec Clicks Technology. Les dimensions proviennent des caractéristiques publiées (130,5 × 78,63 mm, écran 4,03 pouces 1080 × 1200) et de mesures sur les images officielles du produit. Les fonctions des touches latérales et les couleurs sont estimées.",
+      "link.official": "Site officiel du Clicks Communicator ↗",
+      "link.github": "Code source sur GitHub",
+      "link.linkedin": "LinkedIn de l'auteur",
+      "link.medium": "Medium de l'auteur",
 
       "stage.drag": "Faites glisser pour faire pivoter",
       "h.view": "Vue",
@@ -385,6 +397,10 @@
       "tab.customize": "Personalizar",
       "tab.simulate": "Simulador de pantalla",
       "footer": "Proyecto comunitario no oficial, sin relación con Clicks Technology. Las medidas provienen de las especificaciones publicadas (130,5 × 78,63 mm, pantalla de 4,03 pulgadas 1080 × 1200) y de mediciones de imágenes oficiales del producto. Las funciones de las teclas laterales y los colores son estimaciones.",
+      "link.official": "Web oficial de Clicks Communicator ↗",
+      "link.github": "Código fuente en GitHub",
+      "link.linkedin": "LinkedIn del autor",
+      "link.medium": "Medium del autor",
 
       "stage.drag": "Arrastra para girar",
       "h.view": "Vista",

@@ -122,8 +122,19 @@ select, input[type="url"] {
 .note { font-size: 12px; line-height: 1.6; color: var(--muted); }
 .tips { padding-left: 18px; margin: 0; }
 
+.social { display: flex; align-items: center; gap: 4px; }
+.social a {
+  display: grid; place-items: center;
+  width: 32px; height: 32px; border-radius: 8px;
+  color: var(--muted);
+}
+.social a:hover, .social a:focus-visible { color: var(--text); background: #1b1c20; }
+.social svg { width: 18px; height: 18px; fill: currentColor; }
+
+footer .official { flex: none; margin-left: auto; color: var(--accent); text-decoration: none; white-space: nowrap; }
+footer .official:hover { text-decoration: underline; }
 footer {
-  display: flex; align-items: center;
+  display: flex; align-items: center; gap: 16px;
   min-height: var(--footer-h); padding: 8px 24px;
   border-top: 1px solid var(--line);
   font-size: 11px; color: var(--muted);

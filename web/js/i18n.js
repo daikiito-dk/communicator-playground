@@ -80,7 +80,7 @@
       "tip.chat": "Chat: type and press Enter to send, Esc to go back",
       "tip.scroll": "Use the mouse wheel over the keyboard to scroll (touch keyboard)",
       "tip.mods": "⇧ capitalizes the next letter; alt / 123 types the symbol or number printed above",
-      "tip.kill": "Click the red kill switch on the left side to turn the mic off",
+      "tip.kill": "Click the red kill switch on the left side to toggle the mic off and back on",
       "tip.voice": "Holding the upper key on the left side also starts voice input",
 
       "os.unlock": "Press Space (fingerprint sensor) to unlock",
@@ -206,7 +206,7 @@
       "tip.chat": "会話: 文字を打って Enter で送信、Esc で戻る",
       "tip.scroll": "キーボード面の上でホイール操作をするとスクロール",
       "tip.mods": "⇧ で次の 1 文字が大文字、alt / 123 で次の 1 文字がキー上段の記号・数字",
-      "tip.kill": "左側面の赤いキルスイッチをクリックするとマイクがオフ",
+      "tip.kill": "左側面の赤いキルスイッチをクリックするとマイクのオン／オフが切り替わります",
       "tip.voice": "左側面の上のキー（長押し）でも音声入力",
 
       "os.unlock": "スペースキー（指紋センサー）で解除",
@@ -332,7 +332,7 @@
       "tip.chat": "Conversation : tapez puis Entrée pour envoyer, Échap pour revenir",
       "tip.scroll": "Utilisez la molette au-dessus du clavier pour faire défiler (clavier tactile)",
       "tip.mods": "⇧ met la lettre suivante en majuscule ; alt / 123 saisit le symbole ou le chiffre indiqué au-dessus",
-      "tip.kill": "Cliquez sur l'interrupteur rouge à gauche pour couper le micro",
+      "tip.kill": "Cliquez sur le coupe-circuit rouge à gauche pour activer et couper le micro",
       "tip.voice": "Maintenir la touche du haut sur le côté gauche lance aussi la dictée",
 
       "os.unlock": "Appuyez sur Espace (capteur d'empreintes) pour déverrouiller",
@@ -458,7 +458,7 @@
       "tip.chat": "Chat: escribe y pulsa Intro para enviar, Esc para volver",
       "tip.scroll": "Usa la rueda del ratón sobre el teclado para desplazarte (teclado táctil)",
       "tip.mods": "⇧ pone la siguiente letra en mayúscula; alt / 123 escribe el símbolo o número impreso arriba",
-      "tip.kill": "Haz clic en el interruptor rojo del lado izquierdo para apagar el micrófono",
+      "tip.kill": "Haz clic en el interruptor rojo del lado izquierdo para activar y desactivar el micrófono",
       "tip.voice": "Mantener la tecla superior del lado izquierdo también inicia el dictado",
 
       "os.unlock": "Pulsa Espacio (sensor de huellas) para desbloquear",

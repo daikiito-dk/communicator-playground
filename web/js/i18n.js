@@ -80,6 +80,10 @@
       "tip.voice": "Holding the upper key on the left side also starts voice input",
 
       "os.unlock": "Press Space (fingerprint sensor) to unlock",
+      "os.now": "Now",
+      "os.newMessages": "{n} new messages",
+      "os.event": "Design sync",
+      "os.temp": "72°",
       "os.you": "You: ",
       "os.mock": "mock",
       "os.hubHint": "J / K move · Enter open · N notes",
@@ -198,6 +202,10 @@
       "tip.voice": "左側面の上のキー（長押し）でも音声入力",
 
       "os.unlock": "スペースキー（指紋センサー）で解除",
+      "os.now": "今",
+      "os.newMessages": "{n} 件の新着メッセージ",
+      "os.event": "デザイン定例",
+      "os.temp": "22°",
       "os.you": "あなた: ",
       "os.mock": "モック",
       "os.hubHint": "J / K 移動・Enter 開く・N メモ",
@@ -316,6 +324,10 @@
       "tip.voice": "Maintenir la touche du haut sur le côté gauche lance aussi la dictée",
 
       "os.unlock": "Appuyez sur Espace (capteur d'empreintes) pour déverrouiller",
+      "os.now": "Maintenant",
+      "os.newMessages": "{n} nouveaux messages",
+      "os.event": "Point design",
+      "os.temp": "22°",
       "os.you": "Vous : ",
       "os.mock": "maquette",
       "os.hubHint": "J / K naviguer · Entrée ouvrir · N notes",
@@ -434,6 +446,10 @@
       "tip.voice": "Mantener la tecla superior del lado izquierdo también inicia el dictado",
 
       "os.unlock": "Pulsa Espacio (sensor de huellas) para desbloquear",
+      "os.now": "Ahora",
+      "os.newMessages": "{n} mensajes nuevos",
+      "os.event": "Sincro de diseño",
+      "os.temp": "22°",
       "os.you": "Tú: ",
       "os.mock": "maqueta",
       "os.hubHint": "J / K mover · Intro abrir · N notas",

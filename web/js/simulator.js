@@ -15,7 +15,6 @@
   let stage;
   let iframe = null;
   let toastTimer = null;
-  let look = { cover: "dune" };
 
   function initialState(keep = {}) {
     return {
@@ -37,28 +36,11 @@
       recording: false,
       toast: null,
       stickBottom: false,
-      conversations: C.contacts.map((c, i) => ({
-        ...c,
-        unread: 0,
-        lastAt: i,
-        messages: [{ from: "them", key: `contact.${c.id}.msg` }],
-      })),
+      conversations: window.LockScreen.initialConversations(),
     };
   }
 
-  function escapeHtml(s) {
-    return s.replace(/[&<>"']/g, (ch) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[ch]);
-  }
-
-  const contactName = (c) => t("contact." + c.id);
-
-  // 相手から届いたモックのメッセージは翻訳キーで持ち、言語を切り替えると表示も切り替わるようにします。
-  // 自分で入力した文は text のまま持ちます。
-  function msgText(m) {
-    if (!m.key) return m.text;
-    const v = t(m.key);
-    return Array.isArray(v) ? v[m.index] : v;
-  }
+  const { contactName, msgText, escapeHtml } = window.LockScreen;
 
   function logicalSize() {
     return {
@@ -99,13 +81,7 @@
   }
 
   function lockScreen() {
-    const date = new Date().toLocaleDateString(I18n.locale(), { month: "long", day: "numeric", weekday: "long" });
-    return `
-      <div class="lock-body" data-action="unlock">
-        <div class="clock">${now()}</div>
-        <div class="date">${date}</div>
-        <div class="unlock-hint">${t("os.unlock")}</div>
-      </div>`;
+    return window.LockScreen.html(state.conversations);
   }
 
   function hubScreen() {
@@ -242,9 +218,8 @@
     const prevKey = prev && prev.dataset.screen;
     const prevTop = prev ? prev.scrollTop : 0;
 
-    const cover = C.covers.find((c) => c.id === look.cover) || C.covers[0];
     device.inner.innerHTML = `
-      <div class="os${state.screen === "lock" ? " wall" : ""}" style="--fs:${state.fontScale};--wall:${cover.bg}">
+      <div class="os${state.screen === "lock" ? " on-lock" : ""}" style="--fs:${state.fontScale}">
         ${statusBar()}${screenBody()}${overlays()}
       </div>`;
 
@@ -288,13 +263,15 @@
   function notify(id, message) {
     const conv = state.conversations.find((c) => c.id === id);
     if (!message) message = { from: "them", key: "os.samples", index: Math.floor(Math.random() * t("os.samples").length) };
+    message.at = Date.now();
     conv.messages.push(message);
-    conv.lastAt = Date.now();
+    conv.lastAt = message.at;
     if (state.screen === "chat" && state.convId === id) {
       state.stickBottom = true;
     } else {
       conv.unread += 1;
-      showToast(conv, message);
+      // ロック画面では通知の一覧に並ぶので、上からのポップアップは出しません。
+      if (state.screen !== "lock") showToast(conv, message);
     }
     if (state.screen === "hub") state.selected = 0;
     render();
@@ -304,7 +281,7 @@
     const text = state.input.trim();
     if (!text) return;
     const conv = currentConv();
-    conv.messages.push({ from: "me", text });
+    conv.messages.push({ from: "me", text, at: Date.now() });
     conv.lastAt = Date.now();
     state.input = "";
     state.stickBottom = true;
@@ -532,8 +509,9 @@
     });
 
     setInterval(() => {
-      const t = device.inner.querySelector(".sb-time");
-      if (t) t.textContent = now();
+      if (state.mode === "mock" && state.screen === "lock") return render();
+      const time = device.inner.querySelector(".sb-time");
+      if (time) time.textContent = now();
     }, 30000);
   }
 
@@ -548,11 +526,9 @@
   }
 
   function applyLook(next) {
-    look = next;
     device.setBody(next.body);
     device.setCover(next.cover);
     device.setLayout(next.layout);
-    if (state.mode === "mock" && state.screen === "lock") render();
   }
 
   window.Simulator = {

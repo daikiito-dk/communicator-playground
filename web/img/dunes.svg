@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="420" height="460" viewBox="0 0 420 460">
+  <!-- 砂丘の壁紙。横に引き伸ばしたノイズを斜めから照らして、風紋のような陰影を作ります。照明後のぼかしは、陰影の段差（等高線のような模様）を消すためです。 -->
+  <filter id="dunes" x="0" y="0" width="100%" height="100%" color-interpolation-filters="sRGB">
+    <feTurbulence type="fractalNoise" baseFrequency="0.0028 0.011" numOctaves="2" seed="4"/>
+    <feDiffuseLighting lighting-color="#fff" surfaceScale="45" diffuseConstant="1.1">
+      <feDistantLight azimuth="250" elevation="40"/>
+    </feDiffuseLighting>
+    <feGaussianBlur stdDeviation="2.2"/>
+    <feComponentTransfer>
+      <feFuncR type="gamma" amplitude=".36" exponent="1.6" offset=".05"/>
+      <feFuncG type="gamma" amplitude=".36" exponent="1.6" offset=".05"/>
+      <feFuncB type="gamma" amplitude=".37" exponent="1.6" offset=".055"/>
+    </feComponentTransfer>
+  </filter>
+  <g transform="rotate(-9 210 230)">
+    <rect x="-120" y="-120" width="660" height="700" filter="url(#dunes)"/>
+  </g>
+</svg>

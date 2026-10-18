@@ -85,15 +85,14 @@
     writeHash();
   }
 
+  // 画面には、シミュレーターの開始画面と同じロック画面を表示します。
+  const lockConversations = window.LockScreen.initialConversations();
+
   function renderLockscreen() {
-    const cover = C.covers.find((c) => c.id === state.cover);
     device.inner.innerHTML = `
-      <div class="os wall" style="--wall:${cover.bg}">
-        <div class="sb"><span>9:41</span><span>5G ▮▮▮ 82%</span></div>
-        <div class="lock-body">
-          <div class="clock">9:41</div>
-          <div class="date">${new Date().toLocaleDateString(window.I18n.locale(), { month: "long", day: "numeric", weekday: "long" })}</div>
-        </div>
+      <div class="os on-lock">
+        <div class="sb"><span></span><span>5G ▮▮▮ 82%</span></div>
+        ${window.LockScreen.html(lockConversations, { hint: false })}
       </div>`;
   }
 

@@ -98,10 +98,10 @@
 
     // 名前と最初のメッセージは i18n.js の contact.<id> と contact.<id>.msg です。
     contacts: [
-      { id: "mom", app: "SMS", color: "#ff7eb6" },
-      { id: "boss", app: "Slack", color: "#ff5a4f" },
-      { id: "telegram", app: "Telegram", color: "#4fb3ff" },
-      { id: "whatsapp", app: "WhatsApp", color: "#4ce07a" },
+      { id: "mom", app: "SMS", color: "#ff7eb6", glyph: "✉" },
+      { id: "boss", app: "Slack", color: "#ff5a4f", glyph: "#" },
+      { id: "telegram", app: "Telegram", color: "#4fb3ff", glyph: "➤" },
+      { id: "whatsapp", app: "WhatsApp", color: "#4ce07a", glyph: "✆" },
     ],
   };
 })();

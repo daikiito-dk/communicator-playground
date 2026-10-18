@@ -588,7 +588,44 @@ footer {
   font-family: -apple-system, "Hiragino Sans", "Noto Sans JP", sans-serif;
   font-size: calc(14px * var(--fs, 1));
 }
-.os.wall, .lock-body { background: linear-gradient(rgba(0, 0, 0, .25), rgba(0, 0, 0, .45)), var(--wall); }
+/* 開始画面（ロック画面）。公式の製品画像にならい、砂丘の壁紙に時計と通知を左寄せで並べます */
+.os.on-lock { background: #2b2b2e url(../img/dunes.svg) center / cover; }
+.os.on-lock .sb { position: absolute; top: 0; left: 0; right: 0; z-index: 1; }
+/* ロック画面では大きな時計があるので、ステータスバーの時刻は出しません */
+.os.on-lock .sb-time { visibility: hidden; }
+.lock {
+  --lock-icon: 2.6em;
+  --lock-gap: 1.7em;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  padding: 1.35em 1.4em 1em 2.5em;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, .35);
+}
+.lock-head { padding-left: calc(var(--lock-icon) + var(--lock-gap)); }
+.lock-clock { font-size: 2em; font-weight: 500; line-height: 1.1; letter-spacing: .01em; }
+.lock-sub { margin-top: .25em; font-size: .85em; color: #d8d8dc; }
+.lock-list { flex: 1; min-height: 0; overflow: hidden; margin-top: 1.6em; }
+.lock-n { display: flex; gap: var(--lock-gap); margin-bottom: 1.15em; cursor: pointer; }
+.app-icon {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: var(--lock-icon);
+  height: var(--lock-icon);
+  border-radius: 50%;
+  background: var(--c);
+  color: #fff;
+  font-size: 1em;
+  font-weight: 700;
+  text-shadow: none;
+}
+.lock-n-text { min-width: 0; }
+.lock-n-app { font-size: 1.1em; font-weight: 600; }
+.lock-n-app span { font-weight: 400; color: #d0d0d4; }
+.lock-n-line { margin-top: .2em; font-size: .85em; color: #e2e2e6; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.lock .unlock-hint { flex: none; margin: 0; text-align: center; }
 .sb {
   flex: none;
   display: flex;
@@ -600,20 +637,7 @@ footer {
   color: #e4e4ea;
 }
 .sb-time { font-size: 15px; font-weight: 600; }
-.lock-body {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 4px;
-  text-shadow: 0 1px 6px rgba(0, 0, 0, .4);
-  cursor: pointer;
-}
-.os.wall .lock-body { background: none; }
-.clock { font-size: 4.6em; font-weight: 200; line-height: 1; }
-.date { font-size: 1em; }
-.unlock-hint { margin-top: 28px; font-size: .8em; opacity: .85; }
+.unlock-hint { font-size: .8em; opacity: .85; }
 
 .appbar {
   flex: none;

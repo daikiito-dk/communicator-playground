@@ -36,7 +36,7 @@ python3 -m http.server 8765
 
 ### 画面シミュレーター
 
-- モック OS: ロック画面、Message hub、会話、メモ
+- モック OS: ロック画面、Message hub、会話、メモ。ロック画面は公式の製品画像にならい、時計・日付・予定とアプリごとの通知を並べます（外装カスタマイズの画面にも表示）
 - 画面のキー、または PC のキーボードで操作（J / K、Enter、Esc など）
 - 通知を送ると Signal LED が相手ごとの色で点滅
 - alt / 123 キーで上段の記号・数字を入力、左側面のキルスイッチでマイクをオフ
@@ -52,6 +52,7 @@ web/                  Web ページ（ビルド不要の HTML / CSS / JS）
   js/i18n.js          表示言語（英語・日本語・フランス語・スペイン語）の文言と切り替え
   js/catalog.js       本体色、カバー、配列、アクセサリーのデータ
   js/device.js        端末モックの描画部品（両タブで共通）
+  js/lockscreen.js    開始画面（ロック画面）の描画（両タブで共通）
   js/customizer.js    外装カスタマイズ
   js/simulator.js     画面シミュレーター
 avd/                  Android Studio 用のハードウェアプロファイルと AVD 作成スクリプト

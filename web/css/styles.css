@@ -188,9 +188,8 @@ footer {
   transform-style: preserve-3d;
 }
 .device.solid .back::before { display: none; }
+/* 位置と角の丸みは device.js が背面の断面（BACK_PROFILE）から決めます */
 .device.solid .plateau {
-  inset: calc(15 * var(--mm));
-  border-radius: calc(4 * var(--mm));
   background:
     radial-gradient(circle, rgba(0, 0, 0, .3) calc(.35 * var(--mm)), transparent calc(.45 * var(--mm))) 0 0 / calc(2.2 * var(--mm)) calc(2.2 * var(--mm)),
     linear-gradient(rgba(255, 255, 255, .06), rgba(255, 255, 255, .06)),
@@ -207,6 +206,7 @@ footer {
     radial-gradient(circle, rgba(0, 0, 0, .3) calc(.35 * var(--mm)), transparent calc(.45 * var(--mm))) 0 0 / calc(2.2 * var(--mm)) calc(2.2 * var(--mm)),
     var(--cover);
 }
+.chamfer.rim { background: linear-gradient(var(--tint, transparent), var(--tint, transparent)), var(--body); }
 .device.with-case .chamfer { background: linear-gradient(var(--tint, transparent), var(--tint, transparent)), #161618; }
 .device.solid .camera { transform: translateZ(calc(.7 * var(--mm))); backface-visibility: hidden; }
 .camera-layer {
@@ -560,6 +560,8 @@ footer {
   background: rgba(205, 205, 210, .95);
 }
 .device.with-ring .mag-ring { display: block; }
+/* 立体表示では、下端側の斜面にかからない平らな面に置きます */
+.device.solid .back-mark { bottom: calc(36 * var(--mm)); }
 
 .back-mark {
   position: absolute;

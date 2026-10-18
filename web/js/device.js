@@ -26,18 +26,22 @@
   };
 
   // 本体の外形（mm）。厚みは公開値の 12 mm、角の半径は正面図からの計測値。
-  // wall は側面フレームの高さ。背面はフレームの縁から内側へなだらかに盛り上がります。
+  // wall は側面フレームの高さ。背面カバーはフレームの縁より少し内側から盛り上がります。
   const BODY = { w: 78.63, h: 130.5, t: 12, r: 8.5, wall: 7.7 };
   const CORNER_SEGMENTS = 6;
-  // 背面の断面（縁からの距離 d と、前面からの厚み t、mm）。上面写真と側面写真からの計測値。
+  // 背面の断面（上・左・右の縁からの距離 d と、前面からの厚み t、mm）。背面写真と上面写真からの計測値。
+  // 縁から RIM までは本体色のフレームの面で、その内側から背面カバーがほぼ平らな斜面で立ち上がります。
+  const RIM = 1.5;
   const BACK_PROFILE = [
     { d: 0, t: 7.7 },
-    { d: 3, t: 9.0 },
-    { d: 6, t: 9.8 },
-    { d: 9, t: 10.5 },
-    { d: 12, t: 11.3 },
-    { d: 15, t: 11.9 },
+    { d: RIM, t: 7.7 },
+    { d: 5, t: 10.6 },
+    { d: 7, t: 11.5 },
+    { d: 8.5, t: 11.9 },
   ];
+  // 下端側の斜面は上・左・右の約 3.5 倍の幅（縁から約 26 mm）で、ゆるやかに下がります（背面写真の陰影から計測）。
+  const BOTTOM_STRETCH = 3.5;
+  const bottomInset = (d) => (d <= RIM ? d : RIM + (d - RIM) * BOTTOM_STRETCH);
   const LIGHT = normalize([-0.35, -0.55, -0.75]);
 
   // 側面の部品（mm）。title は i18n.js の翻訳キーです。pos は上面なら本体左端から、左右の側面なら本体上端からの距離。
@@ -89,14 +93,15 @@
     return strip;
   }
 
-  // 縁から d mm 内側の角丸長方形の輪郭（本体中心が原点、z は前面方向が正）。
-  // どの輪郭も同じ角度で点を取るので、隣り合う輪郭の間は平らな台形になります。
+  // 上・左・右の縁から d mm（下端は bottomInset(d) mm）内側の角丸長方形の輪郭（本体中心が原点、z は前面方向が正）。
+  // どの輪郭も同じ角度で点を取るので、隣り合う輪郭の間はほぼ平らな台形になります。
   function ring(d, z) {
     const { w, h, r } = BODY;
     const rr = Math.max(2, r - d * 0.3);
     const ix = w / 2 - d - rr;
-    const iy = h / 2 - d - rr;
-    const corners = [[ix, -iy, -90], [ix, iy, 0], [-ix, iy, 90], [-ix, -iy, 180]];
+    const top = -h / 2 + d + rr;
+    const bottom = h / 2 - bottomInset(d) - rr;
+    const corners = [[ix, top, -90], [ix, bottom, 0], [-ix, bottom, 90], [-ix, top, 180]];
     const pts = [];
     for (const [cx, cy, start] of corners) {
       for (let k = 0; k <= CORNER_SEGMENTS; k++) {
@@ -115,11 +120,12 @@
     for (let b = 0; b < rings.length - 1; b++) {
       const outer = rings[b];
       const inner = rings[b + 1];
+      const cls = BACK_PROFILE[b + 1].d <= RIM ? "chamfer rim" : "chamfer";
       for (let i = 0; i < outer.length; i++) {
         const j = (i + 1) % outer.length;
         const quad = [outer[i], outer[j], inner[j], inner[i]];
         if (Math.hypot(...sub3(quad[1], quad[0])) < 1e-3) continue;
-        const node = el("div", "chamfer", root);
+        const node = el("div", cls, root);
         let n = normalize(cross3(sub3(quad[1], quad[0]), sub3(quad[3], quad[0])));
         const mid = quad.reduce((a, p) => [a[0] + p[0] / 4, a[1] + p[1] / 4, a[2] + p[2] / 4], [0, 0, 0]);
         if (dot3(n, [mid[0], mid[1], -40]) < 0) n = n.map((c) => -c);
@@ -284,7 +290,12 @@
       faces.push({ node: front, n: [0, 0, 1], c: [0, 0, BODY.t / 2] });
       faces.push({ node: back, n: [0, 0, -1], c: [0, 0, -BODY.t / 2] });
     }
-    el("div", "plateau", back);
+    const plateau = el("div", "plateau", back);
+    if (options.solid) {
+      const top = BACK_PROFILE[BACK_PROFILE.length - 1];
+      plateau.style.inset = `${mmCalc(top.d)} ${mmCalc(top.d)} ${mmCalc(bottomInset(top.d))}`;
+      plateau.style.borderRadius = mmCalc(Math.max(2, BODY.r - top.d * 0.3));
+    }
     // 立体表示では、カメラ部を背面から盛り上がった塊として、薄い板を重ねて厚みを出します。
     if (options.solid) {
       for (let k = 1; k <= 8; k++) {

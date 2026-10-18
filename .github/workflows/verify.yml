@@ -1,0 +1,34 @@
+name: Static verification
+
+# Informational only. Do not add this check to required branch protection without approval.
+on:
+  push:
+    branches: [main]
+    paths:
+      - "web/js/**"
+      - ".github/workflows/verify.yml"
+  pull_request:
+    paths:
+      - "web/js/**"
+      - ".github/workflows/verify.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  javascript-syntax:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Check JavaScript syntax
+        run: |
+          set -euo pipefail
+          for file in web/js/*.js; do
+            echo "Checking $file"
+            node --check "$file"
+          done

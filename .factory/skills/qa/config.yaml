@@ -1,0 +1,47 @@
+project: communicator-playground
+platform: github
+imagemagick: true
+video_evidence: false
+droid_control:
+  plugin: droid-control@factory-plugins
+  compose: false
+
+environments:
+  development:
+    url: http://127.0.0.1:8765
+    restrictions:
+      - Test the checked-out branch code, not a deployed environment.
+      - No authentication or persistent server-side data.
+  production:
+    url: https://daikiito-dk.github.io/communicator-playground/
+    restrictions:
+      - Read-only smoke tests only.
+      - Do not publish, submit, or change live data.
+      - Do not load arbitrary third-party URLs in the simulator.
+
+default_target: production
+
+auth:
+  method: none
+  provider: none
+
+personas: []
+
+apps:
+  web:
+    path_patterns:
+      - web/**
+    skill: qa-web
+    test_tool: agent-browser
+
+feature_flags:
+  provider: none
+
+integrations: {}
+
+cleanup:
+  auto_cleanup: false
+  strategy: none
+  instructions: The site has no server-side test data. Use the simulator Reset button when a flow changes its in-memory state.
+
+failure_learning: suggest_in_report

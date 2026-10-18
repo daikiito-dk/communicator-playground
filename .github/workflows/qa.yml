@@ -1,0 +1,206 @@
+name: Browser QA (Factory Droid)
+
+# Informational QA. Do not configure this workflow as a required check unless requested.
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: write
+
+concurrency:
+  group: qa-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  qa:
+    # Fork PRs do not receive FACTORY_API_KEY. Keep them on the secret-free verify.yml workflow.
+    # Draft PRs wait until they are marked ready; the ready_for_review event re-triggers QA.
+    if: github.event_name != 'pull_request' || (github.event.pull_request.head.repo.full_name == github.repository && github.event.pull_request.draft == false)
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Read QA options
+        id: qa-config
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import os
+
+          lines = Path(".factory/skills/qa/config.yaml").read_text().splitlines()
+          values = {}
+          in_droid_control = False
+          for line in lines:
+              if line == "droid_control:":
+                  in_droid_control = True
+                  continue
+              if in_droid_control and line and not line.startswith(" "):
+                  in_droid_control = False
+              if line.startswith("imagemagick:"):
+                  values["imagemagick"] = line.split(":", 1)[1].strip()
+              elif line.startswith("video_evidence:"):
+                  values["video_evidence"] = line.split(":", 1)[1].strip()
+              elif in_droid_control and line.strip().startswith("compose:"):
+                  values["compose"] = line.split(":", 1)[1].strip()
+
+          with open(os.environ["GITHUB_OUTPUT"], "a") as output:
+              for key in ("imagemagick", "video_evidence", "compose"):
+                  output.write(f"{key}={values.get(key, 'false')}\n")
+          PY
+
+      - name: Install ImageMagick
+        if: steps.qa-config.outputs.imagemagick == 'true'
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq imagemagick
+
+      - name: Install ffmpeg for video evidence
+        if: steps.qa-config.outputs.video_evidence == 'true' || steps.qa-config.outputs.compose == 'true'
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq ffmpeg
+
+      - name: Check Factory API key
+        env:
+          FACTORY_API_KEY: ${{ secrets.FACTORY_API_KEY }}
+        run: |
+          if [[ -z "${FACTORY_API_KEY:-}" ]]; then
+            echo "::error::Add the FACTORY_API_KEY repository secret to enable Factory QA."
+            exit 1
+          fi
+
+      - name: Install Droid CLI
+        run: |
+          curl -fsSL https://app.factory.ai/cli | sh
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+          echo "$HOME/.factory/bin" >> "$GITHUB_PATH"
+
+      - name: Run browser QA
+        id: qa
+        continue-on-error: true
+        env:
+          CI: "true"
+          FACTORY_API_KEY: ${{ secrets.FACTORY_API_KEY }}
+          QA_BASE_URL: http://127.0.0.1:8765
+          PULL_REQUEST_NUMBER: ${{ github.event.pull_request.number }}
+          REPO_ID: ${{ github.event.repository.id }}
+          VIDEO_EVIDENCE: ${{ steps.qa-config.outputs.video_evidence }}
+          DROID_CONTROL_COMPOSE: ${{ steps.qa-config.outputs.compose }}
+        run: |
+          set -euo pipefail
+          BASE_REF="${{ github.event.pull_request.base.ref || github.event.repository.default_branch }}"
+          git fetch origin "refs/heads/${BASE_REF}:refs/remotes/origin/${BASE_REF}"
+          export QA_DIFF_BASE="origin/${BASE_REF}"
+
+          python3 -m http.server 8765 --directory web --bind 127.0.0.1 \
+            > "$RUNNER_TEMP/communicator-web.log" 2>&1 &
+          server_pid=$!
+          cleanup() { kill "$server_pid" 2>/dev/null || true; }
+          trap cleanup EXIT
+
+          ready=false
+          for _ in $(seq 1 30); do
+            if curl -fsS "$QA_BASE_URL/" >/dev/null; then
+              ready=true
+              break
+            fi
+            sleep 1
+          done
+          if [[ "$ready" != true ]]; then
+            echo "Local web server did not become ready."
+            cat "$RUNNER_TEMP/communicator-web.log"
+            exit 1
+          fi
+
+          prompt="You are running in non-interactive CI with no human available. Do not use AskUser or wait for input. Run the /qa skill against the checked-out pull-request code. QA_BASE_URL is the local server for this branch. QA_DIFF_BASE is ${QA_DIFF_BASE}. Do not modify application files, commit, push, deploy, or submit external forms. Write the final report to qa-results/report.md."
+          if [[ "$VIDEO_EVIDENCE" == "true" ]]; then
+            prompt+=" Use Droid Control Capture and upload video evidence according to the QA skill."
+          fi
+          if [[ "$DROID_CONTROL_COMPOSE" == "true" ]]; then
+            prompt+=" Run Droid Control Compose for each captured flow according to the QA skill."
+          fi
+
+          set +e
+          droid exec --auto high "$prompt" 2>&1 | tee qa-output.txt
+          qa_status=${PIPESTATUS[0]}
+          set -e
+          exit "$qa_status"
+
+      - name: Upload QA report and evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: communicator-qa-${{ github.run_id }}
+          path: |
+            qa-results/
+            qa-output.txt
+          if-no-files-found: warn
+          retention-days: 14
+
+      - name: Post or update pull request QA report
+        if: always() && github.event_name == 'pull_request'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          set -euo pipefail
+          mkdir -p qa-results
+          {
+            echo '<!-- qa-report -->'
+            if [[ -s qa-results/report.md ]]; then
+              if grep -q '^## QA Report' qa-results/report.md; then
+                cat qa-results/report.md
+              else
+                echo '## QA Report'
+                echo
+                cat qa-results/report.md
+              fi
+            elif [[ -s qa-output.txt ]]; then
+              echo '## QA Report'
+              echo
+              echo 'The QA run did not write a structured report. See the captured output below.'
+              echo
+              echo '<details><summary>QA output</summary>'
+              echo
+              echo '```text'
+              tail -c 12000 qa-output.txt
+              echo '```'
+              echo '</details>'
+            else
+              echo '## QA Report'
+              echo
+              echo 'The QA run did not produce a report. Check the workflow log.'
+            fi
+            echo
+            echo '---'
+            echo
+            echo "[Workflow run and downloadable evidence](${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID})"
+          } > qa-results/pr-comment.md
+          jq -Rs '{body: .}' < qa-results/pr-comment.md > qa-results/pr-comment.json
+
+          comments_url="repos/${GITHUB_REPOSITORY}/issues/${PR_NUMBER}/comments?per_page=100"
+          comment_id="$(gh api --paginate --slurp "$comments_url" \
+            --jq 'flatten | map(select((.body // "") | startswith("<!-- qa-report -->"))) | .[0].id // empty' \
+            | head -n 1)"
+          if [[ -n "$comment_id" ]]; then
+            gh api --method PATCH "repos/${GITHUB_REPOSITORY}/issues/comments/${comment_id}" \
+              --input qa-results/pr-comment.json >/dev/null
+          else
+            gh api --method POST "repos/${GITHUB_REPOSITORY}/issues/${PR_NUMBER}/comments" \
+              --input qa-results/pr-comment.json >/dev/null
+          fi
+
+      - name: Propagate QA result
+        if: always() && steps.qa.outcome == 'failure'
+        run: exit 1

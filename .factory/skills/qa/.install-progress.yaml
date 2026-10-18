@@ -1,0 +1,42 @@
+project: communicator-playground
+platform: github
+environments:
+  development:
+    url: http://127.0.0.1:8765
+    restrictions:
+      - Run against the checked-out branch code in CI
+      - No authentication or persistent server-side data
+  production:
+    url: https://daikiito-dk.github.io/communicator-playground/
+    restrictions:
+      - Read-only
+      - Do not publish, submit, or change live data
+default_target: production
+auth:
+  method: none
+  provider: none
+personas: []
+critical_flows:
+  - Switch among English, Japanese, French, and Spanish
+  - Change body, cover, keyboard layout, and device view
+  - Verify the configuration hash and share-link behavior
+  - Unlock the simulator, browse messages, open chats, and use notes
+  - Enter text with the on-screen and host keyboards
+  - Trigger notifications and verify unread state and Signal LED
+  - Change density, font scale, safe-area overlay, and Clicks Key action
+  - Load a local URL in the sandboxed screen iframe and verify invalid URLs are rejected
+cleanup:
+  auto_cleanup: false
+  strategy: none
+  instructions: The app is static and stores no test data; restore the simulator with its Reset button.
+imagemagick: true
+video_evidence: false
+droid_control:
+  plugin: droid-control@factory-plugins
+  compose: false
+ci:
+  provider: github
+  enabled: true
+  trigger: pull_request
+  required: false
+failure_learning: suggest_in_report

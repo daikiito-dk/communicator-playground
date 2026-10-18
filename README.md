@@ -2,6 +2,8 @@
 
 [English](#english) | [日本語](#日本語)
 
+![Communicator Playground](docs/images/social-preview.png)
+
 | Customizer | Back (sloped 3D view) | Screen simulator |
 |---|---|---|
 | ![](docs/images/customize-front.png) | ![](docs/images/customize-back.png) | ![](docs/images/simulator.png) |

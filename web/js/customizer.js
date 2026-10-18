@@ -26,8 +26,9 @@
     if (C.bodies.some((b) => b.id === p.get("body"))) state.body = p.get("body");
     if (C.covers.some((c) => c.id === p.get("cover"))) state.cover = p.get("cover");
     if (C.layouts[p.get("kb")]) state.layout = p.get("kb");
-    state.case = p.get("case") === "1";
-    state.ring = p.get("ring") === "1";
+    // アクセサリーの選択は一時的に非表示にしているため、URL の case / ring は読みません。
+    state.case = false;
+    state.ring = false;
     const view = VIEWS[p.get("view")];
     if (view) ({ angle, tilt } = view);
   }
@@ -37,8 +38,8 @@
     p.set("body", state.body);
     p.set("cover", state.cover);
     p.set("kb", state.layout);
-    p.set("case", state.case ? "1" : "0");
-    p.set("ring", state.ring ? "1" : "0");
+    p.delete("case");
+    p.delete("ring");
     p.set("view", currentView());
     history.replaceState(null, "", "#" + p.toString());
   }

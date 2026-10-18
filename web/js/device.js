@@ -43,6 +43,9 @@
   const BOTTOM_STRETCH = 3.5;
   const bottomInset = (d) => (d <= RIM ? d : RIM + (d - RIM) * BOTTOM_STRETCH);
   const LIGHT = normalize([-0.35, -0.55, -0.75]);
+  // 画面のガラスに映り込む光源（見る人から見て左上の手前。回転しても動かない）。
+  const VIEW_LIGHT = normalize([-0.45, -0.7, 1]);
+  const GLARE_HALF = normalize([VIEW_LIGHT[0], VIEW_LIGHT[1], VIEW_LIGHT[2] + 1]);
 
   // 側面の部品（mm）。title は i18n.js の翻訳キーです。pos は上面なら本体左端から、左右の側面なら本体上端からの距離。
   const SIDE_PARTS = {
@@ -183,14 +186,18 @@
   // 向きから見て裏側を向いている面は、backface-visibility に頼らず JavaScript で隠します。
   // Safari では子要素を持つ面の backface-visibility が効かず、Chrome では隠れた面も描画の負担になるためです。
   // rx, ry は CSS の rotateX / rotateY の角度、eye は本体中心から視点までの距離（mm）です。
-  function cull(faces, rx, ry, eye) {
+  function rotator(rx, ry) {
     const [sx, cx] = [Math.sin((rx * Math.PI) / 180), Math.cos((rx * Math.PI) / 180)];
     const [sy, cy] = [Math.sin((ry * Math.PI) / 180), Math.cos((ry * Math.PI) / 180)];
-    const rot = ([x, y, z]) => {
+    return ([x, y, z]) => {
       const x1 = x * cy + z * sy;
       const z1 = -x * sy + z * cy;
       return [x1, y * cx - z1 * sx, y * sx + z1 * cx];
     };
+  }
+
+  function cull(faces, rx, ry, eye) {
+    const rot = rotator(rx, ry);
     for (const f of faces) {
       const n = rot(f.n);
       const c = rot(f.c);
@@ -200,6 +207,19 @@
         f.node.style.visibility = visible ? "" : "hidden";
       }
     }
+  }
+
+  // ガラスの映り込み。光の反射方向（GLARE_HALF）が画面のどこに来るかで、明るい部分の位置と強さを決めます。
+  function updateGlare(glare, rx, ry) {
+    const rot = rotator(rx, ry);
+    const n = rot([0, 0, 1]);
+    const u = dot3(GLARE_HALF, rot([1, 0, 0]));
+    const v = dot3(GLARE_HALF, rot([0, 1, 0]));
+    const spec = Math.max(0, dot3(n, GLARE_HALF));
+    glare.style.setProperty("--gx", (50 + u * 170).toFixed(1) + "%");
+    glare.style.setProperty("--gy", (50 + v * 170).toFixed(1) + "%");
+    glare.style.setProperty("--gs", (50 + (u + v) * 120).toFixed(1) + "%");
+    glare.style.setProperty("--ga", (0.07 + 0.38 * Math.pow(spec, 6)).toFixed(3));
   }
 
   function buildSides(root, faces) {
@@ -264,6 +284,7 @@
     const screen = el("div", "screen", front);
     const inner = el("div", "screen-inner", screen);
     I18n.title(el("div", "punch", front), "dev.punch");
+    const glare = options.solid ? el("div", "glare", front) : null;
     const keyboard = el("div", "keyboard", front);
     el("div", "speaker left", front);
     el("div", "speaker right", front);
@@ -411,6 +432,7 @@
         root.style.transform = `rotateX(${rx}deg) rotateY(${ry}deg)`;
         const perspective = parseFloat(getComputedStyle(container).perspective) || 1800;
         cull(faces, rx, ry, perspective / mm);
+        if (glare) updateGlare(glare, rx, ry);
       },
 
       setLogicalSize(w, h) {

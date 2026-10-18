@@ -392,8 +392,7 @@ footer {
     0 0 0 calc(.25 * var(--mm)) rgba(0, 0, 0, .25);
 }
 /* アプリ検索キー: 4 つの点と虫眼鏡 */
-.key.apps::after {
-  content: "";
+.key.apps .main {
   width: calc(2.6 * var(--mm));
   height: calc(2.6 * var(--mm));
   background:
@@ -403,7 +402,6 @@ footer {
     radial-gradient(circle, transparent 0 22%, var(--key-fg) 24% 34%, transparent 37%) 100% 100% / 50% 50%;
   background-repeat: no-repeat;
 }
-.key.apps .main { display: none; }
 /* Clicks Key: 赤いキーに白い C 形のロゴ（簡略化した図形） */
 .key.clicks {
   background:
@@ -411,8 +409,7 @@ footer {
     radial-gradient(ellipse at 50% 40%, #c23443, #96202d 75%);
   color: #fff;
 }
-.key.clicks::after {
-  content: "";
+.key.clicks .main {
   width: calc(2.5 * var(--mm));
   height: calc(2.5 * var(--mm));
   border-radius: 50%;
@@ -420,9 +417,63 @@ footer {
   border-right-color: transparent;
   box-sizing: border-box;
 }
-.key.clicks .main { display: none; }
 .key.pressed, .key:active { transform: translateY(calc(.3 * var(--mm))); filter: brightness(1.35); }
 .device.url-mode .key { cursor: default; }
+
+/* ---- 立体表示: 盛り上がった前面ガラスとキー、回転に合わせて動くガラスの映り込み ---- */
+.device.solid .front,
+.device.solid .keyboard { transform-style: preserve-3d; }
+/* ガラスはフレームから約 0.8 mm 盛り上がります。縁の黒い側面は、同じ形の板を重ねて表します */
+.device.solid .glass { transform: translateZ(calc(.8 * var(--mm))); transform-style: preserve-3d; }
+.device.solid .glass::before,
+.device.solid .glass::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: #0b0b0d;
+  pointer-events: none;
+}
+.device.solid .glass::before { transform: translateZ(calc(-.27 * var(--mm))); }
+.device.solid .glass::after { transform: translateZ(calc(-.54 * var(--mm))); background: #141416; }
+.device.solid .screen,
+.device.solid .punch { transform: translateZ(calc(.83 * var(--mm))); }
+.glare {
+  position: absolute;
+  left: calc(3.1 * var(--mm));
+  top: calc(3.05 * var(--mm));
+  width: calc(72.4 * var(--mm));
+  height: calc(81.45 * var(--mm));
+  border-radius: calc(6.7 * var(--mm));
+  transform: translateZ(calc(.86 * var(--mm)));
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse 60% 45% at var(--gx, 30%) var(--gy, 20%), rgba(255, 255, 255, var(--ga, .06)), transparent 70%),
+    linear-gradient(118deg, transparent calc(var(--gs, 40%) - 14%), rgba(255, 255, 255, calc(var(--ga, .06) * .8)) var(--gs, 40%), transparent calc(var(--gs, 40%) + 14%));
+}
+/* キーは約 1 mm 盛り上がり、根元に黒い縁があります。キートップの下に 2 枚の板を重ねて側面を表します */
+.device.solid .key {
+  transform: translateZ(calc(1 * var(--mm)));
+  transform-style: preserve-3d;
+  box-shadow: inset 0 calc(-.45 * var(--mm)) calc(.4 * var(--mm)) rgba(0, 0, 0, .45);
+}
+.device.solid .key::before,
+.device.solid .key::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+}
+.device.solid .key::before { transform: translateZ(calc(-.5 * var(--mm))); background: color-mix(in srgb, var(--key-bg), #000 35%); }
+.device.solid .key::after { inset: calc(-.3 * var(--mm)); transform: translateZ(calc(-1 * var(--mm))); background: #08080a; }
+.device.solid .key.clicks::before { background: #6e1520; }
+.device.solid .key.pressed,
+.device.solid .key:active { transform: translateZ(calc(.45 * var(--mm))); filter: none; }
+/* スペースキー（指紋センサー）はくぼんだパッドなので盛り上げません */
+.device.solid .key.space { transform: translateZ(calc(.05 * var(--mm))); }
+.device.solid .key.space::before,
+.device.solid .key.space::after { display: none; }
 
 .speaker {
   position: absolute;

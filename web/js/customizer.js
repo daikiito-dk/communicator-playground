@@ -9,9 +9,10 @@
   const state = { body: "smoke", cover: "dune", layout: "qwerty", case: false, ring: false };
   let device;
   let stage;
-  // 表示の向き（rotateY / rotateX の角度）。側面が見えるよう、正面と背面も少し斜めにしています。
+  // 表示の向き（rotateY / rotateX の角度）。正面はシミュレーターと同じく左右の側面キーが見えるよう真正面から、
+  // 背面は側面が見えるよう少し斜めにしています。
   const VIEWS = {
-    front: { angle: -18, tilt: -8 },
+    front: { angle: 0, tilt: -4 },
     back: { angle: 198, tilt: -8 },
     left: { angle: 62, tilt: -10 },
     right: { angle: -62, tilt: -10 },

@@ -229,11 +229,27 @@ footer {
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
 }
-/* 前面に描いていた側面部品は、立体表示では側面の帯に置き直します */
-.device.solid .front > .side-key,
-.device.solid .front > .side-switch,
+/* 立体表示では、側面の部品は側面の帯（.s-key など）に置きます。
+   正面から見ると帯は真横を向いて見えないため、キーの前面側の壁（前面と平行な面）を前面に重ねて、
+   シミュレーターと同じように輪郭からはみ出したキーが見えるようにします。
+   奥行きは帯の中心（前面から 3.85 mm）からキーの太さの半分（1.25 mm）手前、はみ出しはキーの盛り上がり（0.9 mm）です */
 .device.solid .front > .jack,
 .device.solid .front > .led { display: none; }
+.device.solid .front > .side-key,
+.device.solid .front > .side-switch {
+  transform: translateZ(calc(-2.6 * var(--mm)));
+  background: linear-gradient(90deg, color-mix(in srgb, var(--body-solid), #000 45%), color-mix(in srgb, var(--body-solid), #000 20%));
+  box-shadow: 0 0 0 calc(.1 * var(--mm)) rgba(0, 0, 0, .3);
+  pointer-events: none;
+}
+.device.solid .front > .side-key.left { left: calc(-.9 * var(--mm)); width: calc(.9 * var(--mm)); }
+.device.solid .front > .side-key.right { right: calc(-.9 * var(--mm)); width: calc(.9 * var(--mm)); }
+.device.solid .front > .side-key.top { top: calc(-.9 * var(--mm)); height: calc(.9 * var(--mm)); }
+.device.solid .front > .side-switch {
+  left: calc(-.5 * var(--mm));
+  width: calc(.5 * var(--mm));
+  background: #c0283a;
+}
 
 /* 裏向きの .side と .chamfer は device.js の cull() で隠します */
 .side {
